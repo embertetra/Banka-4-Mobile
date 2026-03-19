@@ -26,7 +26,7 @@ fun AppNavigation() {
 
         composable(Screen.Home.route) {
             HomeScreen(
-                // onOpenVerification = { navController.navigate(Screen.Verification.route) }
+                onOpenVerification = { navController.navigate(Screen.Verification.route) }
             )
         }
 
@@ -41,14 +41,6 @@ fun AppNavigation() {
 fun NavController.navigateToHome() {
     navigate(Screen.Home.route) {
         popUpTo(Screen.Login.route) {
-            inclusive = true
-        }
-    }
-}
-
-fun NavController.navigateToLogin() {
-    navigate(Screen.Login.route) {
-        popUpTo(graph.startDestinationId) {
             inclusive = true
         }
     }
