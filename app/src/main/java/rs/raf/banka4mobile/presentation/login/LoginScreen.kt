@@ -7,29 +7,33 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState = viewModel.uiState.collectAsStateWithLifecycle().value
+    val fieldShape = RoundedCornerShape(10.dp)
 
     LaunchedEffect(uiState.isLoginSuccessful) {
         if (uiState.isLoginSuccessful) {
@@ -38,13 +42,7 @@ fun LoginScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Prijava") }
-            )
-        }
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -53,32 +51,57 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Banka 4 Mobile",
-                style = MaterialTheme.typography.headlineMedium
+                text = "Prijavi se",
+                style = MaterialTheme.typography.headlineLarge,
+                color = Color(0xFF270071),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(70.dp))
+
+            TextField(
+                value = uiState.email,
+                onValueChange = viewModel::onEmailChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(3.dp, fieldShape),
+                label = { Text("Email") },
+                singleLine = true,
+                shape = fieldShape,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            TextField(
+                value = uiState.password,
+                onValueChange = viewModel::onPasswordChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .shadow(3.dp, fieldShape),
+                label = { Text("Lozinka") },
+                singleLine = true,
+                shape = fieldShape,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent,
+                    disabledIndicatorColor = Color.Transparent,
+                ),
+                visualTransformation = PasswordVisualTransformation()
             )
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            OutlinedTextField(
-                value = uiState.email,
-                onValueChange = viewModel::onEmailChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Email") },
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = uiState.password,
-                onValueChange = viewModel::onPasswordChange,
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Lozinka") },
-                singleLine = true,
-//                visualTransformation = PasswordVisualTransformation()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             uiState.errorMessage?.let { error ->
                 Text(
@@ -90,8 +113,15 @@ fun LoginScreen(
 
             Button(
                 onClick = viewModel::login,
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                enabled = !uiState.isLoading,
+                shape = fieldShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF270071),
+                    contentColor = Color.White,
+                )
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator()
