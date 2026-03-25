@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
 
     implementation(libs.androidx.material3)
+    implementation(libs.material.icons.extended)
 
     // Navigation
     implementation(libs.androidx.navigation.compose)
@@ -80,6 +81,7 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
+    implementation(libs.firebase.crashlytics.buildtools)
     ksp(libs.hilt.compiler)
 
     // Networking
@@ -100,6 +102,9 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+
+    //TOTP
+    implementation(libs.kotlin.onetimepassword)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

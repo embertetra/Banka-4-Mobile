@@ -10,5 +10,7 @@ interface AuthRepository {
 
     suspend fun getSession(): Session?
 
+    suspend fun getSecretMobile(): Result<String>
+
     suspend fun logout()
 }
