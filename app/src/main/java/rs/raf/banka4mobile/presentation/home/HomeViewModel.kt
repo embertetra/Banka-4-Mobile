@@ -32,16 +32,24 @@ class HomeViewModel @Inject constructor(
             UiEvent.ScreenOpened -> fetchData()
             UiEvent.PreviousAccountClicked -> previousAccount()
             UiEvent.NextAccountClicked -> nextAccount()
-            is UiEvent.QuickActionClicked -> onQuickAction(event.action)
-            UiEvent.OpenVerificationClicked -> openVerification()
+            UiEvent.OpenCardsClicked -> openCards()
+            UiEvent.CreditInstallmentClicked -> onCreditInstallmentClicked()
         }
     }
 
-    private fun openVerification() {
+    private fun openCards() {
         if (state.value.isLoading) return
 
         viewModelScope.launch {
-            _sideEffects.emit(SideEffect.NavigateToVerification)
+            _sideEffects.emit(SideEffect.NavigateToCards)
+        }
+    }
+
+    private fun onCreditInstallmentClicked() {
+        if (state.value.isLoading) return
+
+        viewModelScope.launch {
+            _sideEffects.emit(SideEffect.ShowToast("Detalji rate za kredit uskoro."))
         }
     }
 
@@ -56,6 +64,7 @@ class HomeViewModel @Inject constructor(
                 setState {
                     copy(
                         accounts = mockAccounts(),
+                        transactions = mockTransactions(),
                         selectedAccountIndex = 0,
                         errorMessage = null
                     )
@@ -102,20 +111,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun onQuickAction(action: HomeContract.QuickAction) {
-        if (state.value.isLoading) return
-
-        val message = when (action) {
-            HomeContract.QuickAction.TRANSFER -> "Transfer ce uskoro biti povezan."
-            HomeContract.QuickAction.EXCHANGE -> "Menjacnica ce uskoro biti povezana."
-            HomeContract.QuickAction.CARDS -> "Kartice ce uskoro biti povezane."
-        }
-
-        viewModelScope.launch {
-            _sideEffects.emit(SideEffect.ShowToast(message))
-        }
-    }
-
     private fun mockAccounts(): List<HomeContract.AccountItem> {
         return listOf(
             HomeContract.AccountItem(
@@ -131,6 +126,46 @@ class HomeViewModel @Inject constructor(
                 accountNumber = "265-000000000002-22",
                 balance = 2350.30,
                 currency = "EUR"
+            )
+        )
+    }
+
+    private fun mockTransactions(): List<HomeContract.TransactionItem> {
+        return listOf(
+            HomeContract.TransactionItem(
+                id = "tx-1",
+                name = "Plata",
+                amount = 1450.00,
+                currency = "EUR",
+                type = HomeContract.TransactionType.RECEIVED
+            ),
+            HomeContract.TransactionItem(
+                id = "tx-2",
+                name = "Racun za struju",
+                amount = 92.50,
+                currency = "EUR",
+                type = HomeContract.TransactionType.SENT
+            ),
+            HomeContract.TransactionItem(
+                id = "tx-3",
+                name = "Transfer od Jelene",
+                amount = 120.00,
+                currency = "EUR",
+                type = HomeContract.TransactionType.RECEIVED
+            ),
+            HomeContract.TransactionItem(
+                id = "tx-4",
+                name = "Kupovina - Market",
+                amount = 48.20,
+                currency = "EUR",
+                type = HomeContract.TransactionType.SENT
+            ),
+            HomeContract.TransactionItem(
+                id = "tx-5",
+                name = "Internet",
+                amount = 29.99,
+                currency = "EUR",
+                type = HomeContract.TransactionType.SENT
             )
         )
     }

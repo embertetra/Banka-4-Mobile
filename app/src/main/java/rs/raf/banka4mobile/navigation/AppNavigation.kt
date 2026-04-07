@@ -5,6 +5,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import rs.raf.banka4mobile.presentation.cards.CardsScreen
 import rs.raf.banka4mobile.presentation.home.HomeScreen
 import rs.raf.banka4mobile.presentation.login.LoginScreen
 import rs.raf.banka4mobile.presentation.verification.VerificationScreen
@@ -26,7 +27,13 @@ fun AppNavigation() {
 
         composable(Screen.Home.route) {
             HomeScreen(
-                onOpenVerification = { navController.navigate(Screen.Verification.route) }
+                onOpenCards = { navController.navigate(Screen.Cards.route) }
+            )
+        }
+
+        composable(Screen.Cards.route) {
+            CardsScreen(
+                onBack = { navController.popBackStack() }
             )
         }
 

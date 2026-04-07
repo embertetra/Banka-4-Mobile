@@ -1,35 +1,41 @@
 package rs.raf.banka4mobile.presentation.home
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CreditCard
-import androidx.compose.material.icons.filled.CurrencyExchange
-import androidx.compose.material.icons.filled.SwapHoriz
-import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +45,6 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -54,7 +59,7 @@ private val GradientColor = Color(0xFF005EAD)
 
 @Composable
 fun HomeScreen(
-    onOpenVerification: () -> Unit,
+    onOpenCards: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
@@ -67,7 +72,7 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.sideEffects.collect { sideEffect: HomeContract.SideEffect ->
             when (sideEffect) {
-                HomeContract.SideEffect.NavigateToVerification -> onOpenVerification()
+                HomeContract.SideEffect.NavigateToCards -> onOpenCards()
                 is HomeContract.SideEffect.ShowToast -> {
                     Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
                 }
@@ -79,22 +84,8 @@ fun HomeScreen(
         state = state,
         onPrevious = { viewModel.onEvent(HomeContract.UiEvent.PreviousAccountClicked) },
         onNext = { viewModel.onEvent(HomeContract.UiEvent.NextAccountClicked) },
-        onTransferClick = {
-            viewModel.onEvent(
-                HomeContract.UiEvent.QuickActionClicked(HomeContract.QuickAction.TRANSFER)
-            )
-        },
-        onExchangeClick = {
-            viewModel.onEvent(
-                HomeContract.UiEvent.QuickActionClicked(HomeContract.QuickAction.EXCHANGE)
-            )
-        },
-        onCardsClick = {
-            viewModel.onEvent(
-                HomeContract.UiEvent.QuickActionClicked(HomeContract.QuickAction.CARDS)
-            )
-        },
-        onOpenVerification = { viewModel.onEvent(HomeContract.UiEvent.OpenVerificationClicked) },
+        onCreditInstallmentClick = { viewModel.onEvent(HomeContract.UiEvent.CreditInstallmentClicked) },
+        onCardsClick = { viewModel.onEvent(HomeContract.UiEvent.OpenCardsClicked) }
     )
 }
 
@@ -103,10 +94,8 @@ private fun HomeScreenContent(
     state: HomeContract.UiState,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
-    onTransferClick: () -> Unit,
-    onExchangeClick: () -> Unit,
-    onCardsClick: () -> Unit,
-    onOpenVerification: () -> Unit,
+    onCreditInstallmentClick: () -> Unit,
+    onCardsClick: () -> Unit
 ) {
     val selectedAccount = state.selectedAccount
 
@@ -136,31 +125,43 @@ private fun HomeScreenContent(
             }
 
             selectedAccount != null -> {
-                AccountSwitcher(
-                    selectedAccount = selectedAccount,
-                    onPrevious = onPrevious,
-                    onNext = onNext,
-                    modifier = Modifier.align(Alignment.TopCenter)
-                )
-
-                BalanceCircle(
-                    account = selectedAccount,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-
-                Row(
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
+                        .fillMaxSize()
+                        .statusBarsPadding()
+                        .imePadding()
                         .navigationBarsPadding()
-                        .padding(bottom = 22.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.Top
                 ) {
-                    HomeActionItem("Transfer", Icons.Default.SwapHoriz, onTransferClick)
-                    HomeActionItem("Menjacnica", Icons.Default.CurrencyExchange, onExchangeClick)
-                    HomeActionItem("Kartice", Icons.Default.CreditCard, onCardsClick)
-                    HomeActionItem("Verifikacija", Icons.Default.VerifiedUser, onOpenVerification)
+                    AccountSwitcher(
+                        selectedAccount = selectedAccount,
+                        onPrevious = onPrevious,
+                        onNext = onNext
+                    )
+
+                    BalanceCircle(
+                        account = selectedAccount,
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .padding(top = 8.dp)
+                    )
+
+                    ActionRow(
+                        onCreditInstallmentClick = onCreditInstallmentClick,
+                        onCardsClick = onCardsClick,
+                        modifier = Modifier.padding(top = 14.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    LazyColumn(
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(bottom = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        items(items = state.transactions, key = { it.id }) { transaction ->
+                            TransactionCard(transaction = transaction)
+                        }
+                    }
                 }
             }
         }
@@ -177,8 +178,7 @@ private fun AccountSwitcher(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .statusBarsPadding()
-            .padding(top = 28.dp)
+            .padding(top = 12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -225,6 +225,92 @@ private fun AccountSwitcher(
 }
 
 @Composable
+private fun ActionRow(
+    onCreditInstallmentClick: () -> Unit,
+    onCardsClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            onClick = onCreditInstallmentClick,
+            modifier = Modifier.weight(1f),
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFFE9F2FF),
+                contentColor = GradientColor
+            )
+        ) {
+            Text(
+                text = "Rata za kredit: 100e",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        OutlinedButton(
+            onClick = onCardsClick,
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(Color(0xFFE9F2FF)),
+            border = BorderStroke(0.dp, Color.Transparent)
+        ) {
+            Icon(
+                imageVector = Icons.Default.CreditCard,
+                contentDescription = "Kartice",
+                tint = GradientColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun TransactionCard(transaction: HomeContract.TransactionItem) {
+    val isReceived = transaction.type == HomeContract.TransactionType.RECEIVED
+    val amountColor = if (isReceived) Color(0xFF4CAF50) else Color(0xFFEF5350)
+    val amountPrefix = if (isReceived) "+" else "-"
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFF)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = transaction.name,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color(0xFF1F1F1F),
+                modifier = Modifier.weight(1f)
+            )
+
+            Text(
+                text = "$amountPrefix${String.format(Locale.US, "%.2f", transaction.amount)} ${transaction.currency}",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Bold,
+                color = amountColor,
+                textAlign = TextAlign.End
+            )
+        }
+
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 8.dp),
+            thickness = 1.dp,
+            color = GradientColor.copy(alpha = 0.20f)
+        )
+    }
+}
+
+@Composable
 private fun BalanceCircle(
     account: HomeContract.AccountItem,
     modifier: Modifier = Modifier
@@ -233,19 +319,16 @@ private fun BalanceCircle(
         modifier = modifier
             .size(308.dp)
             .drawBehind {
-                val center = Offset(size.width / 2f, size.height / 2f)
-                val radius = size.minDimension * 0.5f
                 drawCircle(
                     brush = Brush.radialGradient(
                         colorStops = arrayOf(
                             0.30f to GradientColor.copy(alpha = 0.26f),
                             1.00f to Color.Transparent
                         ),
-                        center = center,
-                        radius = radius
+                        center = Offset(size.width / 2f, size.height / 2f),
+                        radius = size.minDimension * 0.5f
                     )
                 )
-
             },
         contentAlignment = Alignment.Center
     ) {
@@ -279,35 +362,5 @@ private fun BalanceCircle(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun HomeActionItem(
-    label: String,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.padding(horizontal = 4.dp)
-    ) {
-        Button(
-            onClick = onClick,
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFE9F2FF),
-                contentColor = GradientColor
-            )
-        ) {
-            Icon(imageVector = icon, contentDescription = label)
-        }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = label,
-            color = Color(0xFF3E3E3E),
-            style = MaterialTheme.typography.bodySmall,
-
-            )
     }
 }
