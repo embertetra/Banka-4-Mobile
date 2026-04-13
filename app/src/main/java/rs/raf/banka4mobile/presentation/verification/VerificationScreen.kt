@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,12 +25,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
-private val GradientColor = Color(0xFF270071)
+private val GradientColor = Color(0xFF005EAD)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun VerificationScreen(
-    onBack: () -> Unit,
     viewModel: VerificationViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
@@ -53,26 +50,7 @@ fun VerificationScreen(
             .background(Color.White)
     ) {
         Scaffold(
-            containerColor = Color.Transparent,
-            topBar = {
-                TopAppBar(
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White,
-                        navigationIconContentColor = GradientColor,
-                        titleContentColor = GradientColor
-                    ),
-                    title = { Text("") },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Back",
-                                tint = GradientColor
-                            )
-                        }
-                    }
-                )
-            }
+            containerColor = Color.Transparent
         ) { padding ->
 
             Box(
@@ -141,8 +119,8 @@ private fun TotpDigitsRow(
 
     val digitGradient = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFF270071),
-            Color(0xFF3A0CA3)
+            Color(0xFF013F74),
+            Color(0xFF017ADC)
         )
     )
 
