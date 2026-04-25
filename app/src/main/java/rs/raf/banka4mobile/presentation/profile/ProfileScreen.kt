@@ -186,7 +186,7 @@ fun ProfileScreen(
                         }
                     }
 
-                    if (state.errorMessage != null && state.profile != null) {
+                    if (state.errorMessage != null) {
                         Text(
                             text = state.errorMessage ?: "",
                             color = MaterialTheme.colorScheme.error,

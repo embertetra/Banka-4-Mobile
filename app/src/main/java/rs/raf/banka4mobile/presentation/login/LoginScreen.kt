@@ -1,5 +1,6 @@
 package rs.raf.banka4mobile.presentation.login
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +14,6 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,10 +30,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
@@ -57,19 +59,20 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(color = Color.White)
                 .padding(paddingValues)
                 .padding(24.dp),
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Prijavi se",
-                style = MaterialTheme.typography.headlineLarge,
-                color = Color(0xFF270071),
+                text = "Dobrodošao nazad!",
+                style = MaterialTheme.typography.titleLarge,
+                color = Color.Black,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(70.dp))
+            Spacer(modifier = Modifier.height(50.dp))
 
             TextField(
                 value = uiState.email,
@@ -142,19 +145,20 @@ fun LoginScreen(
                 onClick = viewModel::login,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(48.dp),
+                    .height(58.dp),
                 enabled = !uiState.isLoading,
                 shape = fieldShape,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF270071),
+                    containerColor = Color(0xFF005EAD),
                     contentColor = Color.White,
                 )
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator()
-                } else {
-                    Text("Prijavi se")
-                }
+                Text(
+                    text = "Prijavi se",
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 20.sp,
+                    letterSpacing = 1.25.sp
+                )
             }
         }
     }
