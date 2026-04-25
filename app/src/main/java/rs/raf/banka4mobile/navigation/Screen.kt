@@ -19,4 +19,8 @@ sealed class Screen(val route: String) {
 
     data object Verification : Screen("verification")
 
+    data object Exchange : Screen("exchange")
+
+    data object Profile : Screen("profile")
+
 }

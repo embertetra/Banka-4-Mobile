@@ -37,8 +37,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import rs.raf.banka4mobile.presentation.cards.CardsScreen
+import rs.raf.banka4mobile.presentation.exchange.ExchangeScreen
 import rs.raf.banka4mobile.presentation.home.HomeScreen
 import rs.raf.banka4mobile.presentation.login.LoginScreen
+import rs.raf.banka4mobile.presentation.profile.ProfileScreen
 import rs.raf.banka4mobile.presentation.verification.VerificationScreen
 
 private data class BottomTab(
@@ -59,7 +61,7 @@ private val bottomTabs = listOf(
         label = "Menjacnica",
         selectedIcon = Icons.Filled.MonetizationOn,
         unselectedIcon = Icons.Outlined.MonetizationOn,
-        route = null
+        route = Screen.Exchange.route
     ),
     BottomTab(
         label = "Account",
@@ -77,7 +79,7 @@ private val bottomTabs = listOf(
         label = "Profil",
         selectedIcon = Icons.Filled.Person,
         unselectedIcon = Icons.Outlined.Person,
-        route = null
+        route = Screen.Profile.route
     )
 )
 
@@ -85,7 +87,9 @@ private val routesWithBottomBar = setOf(
     Screen.Home.route,
     Screen.Cards.route,
     Screen.Cards.routeWithArg,
-    Screen.Verification.route
+    Screen.Verification.route,
+    Screen.Exchange.route,
+    Screen.Profile.route
 )
 
 @Composable
@@ -161,6 +165,26 @@ fun AppNavigation() {
 
             composable(Screen.Verification.route) {
                 VerificationScreen()
+            }
+
+            composable(Screen.Exchange.route) {
+                ExchangeScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.Profile.route) {
+                ProfileScreen(
+                    onBack = { navController.popBackStack() },
+                    onLogoutSuccess = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Home.route) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    }
+                )
             }
         }
     }
