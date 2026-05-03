@@ -8,6 +8,8 @@ sealed class Screen(val route: String) {
 
     data object Home : Screen("home")
 
+    data object Transfers : Screen("transfers")
+
     data object Cards : Screen("cards") {
         const val ACCOUNT_NUMBER_ARG = "accountNumber"
         val routeWithArg = "$route?$ACCOUNT_NUMBER_ARG={$ACCOUNT_NUMBER_ARG}"
@@ -22,5 +24,4 @@ sealed class Screen(val route: String) {
     data object Exchange : Screen("exchange")
 
     data object Profile : Screen("profile")
-
 }

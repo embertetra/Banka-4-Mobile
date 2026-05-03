@@ -26,21 +26,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavType
 import androidx.navigation.NavController
-import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import rs.raf.banka4mobile.presentation.cards.CardsScreen
 import rs.raf.banka4mobile.presentation.exchange.ExchangeScreen
 import rs.raf.banka4mobile.presentation.home.HomeScreen
 import rs.raf.banka4mobile.presentation.login.LoginScreen
 import rs.raf.banka4mobile.presentation.profile.ProfileScreen
+import rs.raf.banka4mobile.presentation.transfers.TransferScreen
 import rs.raf.banka4mobile.presentation.verification.VerificationScreen
 
 private data class BottomTab(
@@ -55,16 +56,16 @@ private val bottomTabs = listOf(
         label = "Transakcije",
         selectedIcon = Icons.Filled.SwapHoriz,
         unselectedIcon = Icons.Outlined.SwapHoriz,
-        route = null
+        route = Screen.Transfers.route
     ),
     BottomTab(
-        label = "Menjacnica",
+        label = "Menjačnica",
         selectedIcon = Icons.Filled.MonetizationOn,
         unselectedIcon = Icons.Outlined.MonetizationOn,
         route = Screen.Exchange.route
     ),
     BottomTab(
-        label = "Account",
+        label = "Računi",
         selectedIcon = Icons.Filled.AccountBalance,
         unselectedIcon = Icons.Outlined.AccountBalance,
         route = Screen.Home.route
@@ -87,6 +88,7 @@ private val routesWithBottomBar = setOf(
     Screen.Home.route,
     Screen.Cards.route,
     Screen.Cards.routeWithArg,
+    Screen.Transfers.route,
     Screen.Verification.route,
     Screen.Exchange.route,
     Screen.Profile.route
@@ -94,7 +96,6 @@ private val routesWithBottomBar = setOf(
 
 @Composable
 fun AppNavigation() {
-
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -105,26 +106,12 @@ fun AppNavigation() {
                 BottomNavigationBar(
                     currentRoute = currentRoute,
                     onNavigate = { route ->
-                        if (route == Screen.Home.route) {
-                            val returnedToExistingHome = navController.popBackStack(
-                                route = Screen.Home.route,
-                                inclusive = false
-                            )
-
-                            if (!returnedToExistingHome) {
-                                navController.navigate(Screen.Home.route) {
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                        navController.navigate(route) {
+                            popUpTo(Screen.Home.route) {
+                                saveState = true
                             }
-                        } else {
-                            navController.navigate(route) {
-                                popUpTo(Screen.Home.route) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
+                            launchSingleTop = true
+                            restoreState = true
                         }
                     }
                 )
@@ -140,6 +127,10 @@ fun AppNavigation() {
                 LoginScreen(
                     onLoginSuccess = { navController.navigateToHome() }
                 )
+            }
+
+            composable(Screen.Transfers.route) {
+                TransferScreen()
             }
 
             composable(Screen.Home.route) {
@@ -222,7 +213,11 @@ private fun BottomNavigationBar(
                     },
                     icon = {
                         Icon(
-                            imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
+                            imageVector = if (isSelected) {
+                                tab.selectedIcon
+                            } else {
+                                tab.unselectedIcon
+                            },
                             contentDescription = tab.label,
                             modifier = Modifier
                                 .graphicsLayer(

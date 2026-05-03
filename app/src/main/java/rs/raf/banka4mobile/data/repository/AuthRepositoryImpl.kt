@@ -30,7 +30,7 @@ class AuthRepositoryImpl @Inject constructor(
          * Kad završiš testiranje:
          * - samo promeni na false
          */
-        private const val ENABLE_MOCK_LOGIN = true
+        private const val ENABLE_MOCK_LOGIN = false
 
         private const val MOCK_EMAIL = "client@test.com"
         private const val MOCK_PASSWORD = "123456"

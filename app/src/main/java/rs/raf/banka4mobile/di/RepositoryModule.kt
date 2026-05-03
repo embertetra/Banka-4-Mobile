@@ -5,11 +5,13 @@ import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import rs.raf.banka4mobile.data.repository.AuthRepositoryImpl
-import rs.raf.banka4mobile.data.repository.HomeRepositoryImpl
 import rs.raf.banka4mobile.data.repository.ExchangeRepositoryImpl
+import rs.raf.banka4mobile.data.repository.HomeRepositoryImpl
+import rs.raf.banka4mobile.data.repository.TransferRepositoryImpl
 import rs.raf.banka4mobile.domain.repository.AuthRepository
-import rs.raf.banka4mobile.domain.repository.HomeRepository
 import rs.raf.banka4mobile.domain.repository.ExchangeRepository
+import rs.raf.banka4mobile.domain.repository.HomeRepository
+import rs.raf.banka4mobile.domain.repository.TransferRepository
 import javax.inject.Singleton
 
 @Module
@@ -33,4 +35,10 @@ abstract class RepositoryModule {
     abstract fun bindHomeRepository(
         homeRepositoryImpl: HomeRepositoryImpl
     ): HomeRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTransferRepository(
+        transferRepositoryImpl: TransferRepositoryImpl
+    ): TransferRepository
 }

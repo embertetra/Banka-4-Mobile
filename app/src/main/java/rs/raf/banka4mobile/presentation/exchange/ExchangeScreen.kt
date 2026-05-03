@@ -26,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,7 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -79,7 +79,13 @@ fun ExchangeScreen(
         containerColor = ScreenBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Menjačnica", color = PrimaryBlue, fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "Menjačnica",
+                        color = PrimaryBlue,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -169,7 +175,6 @@ fun ExchangeScreen(
                         onBuyAmountChanged = { viewModel.onEvent(UiEvent.BuyAmountChanged(it)) },
                         onBuyFromCurrencyChanged = { viewModel.onEvent(UiEvent.BuyFromCurrencyChanged(it)) },
                         onBuyToCurrencyChanged = { viewModel.onEvent(UiEvent.BuyToCurrencyChanged(it)) },
-                        onPreviewClicked = { viewModel.onEvent(UiEvent.PreviewPurchaseClicked) },
                         onConfirmClicked = { viewModel.onEvent(UiEvent.ConfirmPurchaseClicked) }
                     )
 
@@ -387,7 +392,9 @@ private fun ExchangeCalculatorCard(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
+
                     Spacer(modifier = Modifier.height(6.dp))
+
                     CurrencyDropdown(
                         selectedValue = fromCurrency,
                         values = currencies,
@@ -421,7 +428,9 @@ private fun ExchangeCalculatorCard(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
+
                     Spacer(modifier = Modifier.height(6.dp))
+
                     CurrencyDropdown(
                         selectedValue = toCurrency,
                         values = currencies,
@@ -482,7 +491,6 @@ private fun ExchangePurchaseCard(
     onBuyAmountChanged: (String) -> Unit,
     onBuyFromCurrencyChanged: (String) -> Unit,
     onBuyToCurrencyChanged: (String) -> Unit,
-    onPreviewClicked: () -> Unit,
     onConfirmClicked: () -> Unit
 ) {
     Card(
@@ -503,7 +511,7 @@ private fun ExchangePurchaseCard(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Unesite iznos i odaberite valute za simulaciju ili izvršavanje kupovine.",
+                text = "Unesite iznos i odaberite valute za izvršavanje kupovine.",
                 color = SoftText,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -548,7 +556,9 @@ private fun ExchangePurchaseCard(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
+
                     Spacer(modifier = Modifier.height(6.dp))
+
                     CurrencyDropdown(
                         selectedValue = buyFromCurrency,
                         values = currencies,
@@ -565,7 +575,9 @@ private fun ExchangePurchaseCard(
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
+
                     Spacer(modifier = Modifier.height(6.dp))
+
                     CurrencyDropdown(
                         selectedValue = buyToCurrency,
                         values = currencies,
@@ -598,7 +610,9 @@ private fun ExchangePurchaseCard(
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold
                     )
+
                     Spacer(modifier = Modifier.height(4.dp))
+
                     Text(
                         text = "Procena koliko biste dobili",
                         color = SoftText,
@@ -635,49 +649,27 @@ private fun ExchangePurchaseCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Button(
+                onClick = onConfirmClicked,
+                enabled = !isBuying,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryBlue,
+                    contentColor = Color.White
+                )
             ) {
-                Button(
-                    onClick = onPreviewClicked,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(54.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PositiveBlueBg,
-                        contentColor = AccentBlue
+                if (isBuying) {
+                    CircularProgressIndicator(
+                        color = Color.White
                     )
-                ) {
+                } else {
                     Text(
-                        text = "Prikaži izračun",
+                        text = "Kupi valutu",
                         fontWeight = FontWeight.Bold
                     )
-                }
-
-                Button(
-                    onClick = onConfirmClicked,
-                    enabled = !isBuying,
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(54.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PrimaryBlue,
-                        contentColor = Color.White
-                    )
-                ) {
-                    if (isBuying) {
-                        CircularProgressIndicator(
-                            color = Color.White
-                        )
-                    } else {
-                        Text(
-                            text = "Kupi valutu",
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
                 }
             }
         }
