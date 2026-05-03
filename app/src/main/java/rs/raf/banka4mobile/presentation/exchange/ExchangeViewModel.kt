@@ -12,7 +12,6 @@ import rs.raf.banka4mobile.presentation.exchange.ExchangeContract.UiEvent
 import rs.raf.banka4mobile.presentation.exchange.ExchangeContract.UiState
 import java.util.Locale
 import javax.inject.Inject
-import kotlin.onSuccess
 
 @HiltViewModel
 class ExchangeViewModel @Inject constructor(
@@ -31,12 +30,22 @@ class ExchangeViewModel @Inject constructor(
             }
 
             is UiEvent.FromCurrencyChanged -> {
-                _state.update { it.copy(fromCurrency = event.value) }
+                _state.update {
+                    it.copy(
+                        fromCurrency = event.value,
+                        errorMessage = null
+                    )
+                }
                 recalculate()
             }
 
             is UiEvent.ToCurrencyChanged -> {
-                _state.update { it.copy(toCurrency = event.value) }
+                _state.update {
+                    it.copy(
+                        toCurrency = event.value,
+                        errorMessage = null
+                    )
+                }
                 recalculate()
             }
 
@@ -50,23 +59,33 @@ class ExchangeViewModel @Inject constructor(
                 _state.update {
                     it.copy(
                         buyFromCurrency = event.value,
+                        errorMessage = null,
                         successMessage = null
                     )
                 }
+                previewPurchase()
             }
 
             is UiEvent.BuyToCurrencyChanged -> {
                 _state.update {
                     it.copy(
                         buyToCurrency = event.value,
+                        errorMessage = null,
                         successMessage = null
                     )
                 }
+                previewPurchase()
             }
 
             UiEvent.PreviewPurchaseClicked -> previewPurchase()
+
             UiEvent.ConfirmPurchaseClicked -> confirmPurchase()
-            UiEvent.ClearSuccessMessage -> _state.update { it.copy(successMessage = null) }
+
+            UiEvent.ClearSuccessMessage -> {
+                _state.update {
+                    it.copy(successMessage = null)
+                }
+            }
         }
     }
 
@@ -127,6 +146,7 @@ class ExchangeViewModel @Inject constructor(
                 errorMessage = null
             )
         }
+
         recalculate()
     }
 
@@ -142,10 +162,13 @@ class ExchangeViewModel @Inject constructor(
                 successMessage = null
             )
         }
+
+        previewPurchase()
     }
 
     private fun swapCurrencies() {
         val current = _state.value
+
         _state.update {
             it.copy(
                 fromCurrency = current.toCurrency,
@@ -153,6 +176,7 @@ class ExchangeViewModel @Inject constructor(
                 errorMessage = null
             )
         }
+
         recalculate()
     }
 
@@ -203,6 +227,16 @@ class ExchangeViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     buyPreviewText = "0.00 ${current.buyToCurrency}"
+                )
+            }
+            return
+        }
+
+        if (current.buyFromCurrency == current.buyToCurrency) {
+            _state.update {
+                it.copy(
+                    buyPreviewText = "0.00 ${current.buyToCurrency}",
+                    errorMessage = "Valute ne mogu biti iste."
                 )
             }
             return
@@ -267,13 +301,15 @@ class ExchangeViewModel @Inject constructor(
                     it.copy(
                         isBuying = false,
                         successMessage = "${result.message} Potrošeno: ${formatNumber(result.spentAmount)} ${result.spentCurrency}, dobijeno: ${formatNumber(result.receivedAmount)} ${result.receivedCurrency}.",
-                        buyPreviewText = "${formatNumber(result.receivedAmount)} ${result.receivedCurrency}"
+                        buyPreviewText = "${formatNumber(result.receivedAmount)} ${result.receivedCurrency}",
+                        errorMessage = null
                     )
                 }
             }.onFailure { error ->
                 _state.update {
                     it.copy(
                         isBuying = false,
+                        successMessage = null,
                         errorMessage = error.message ?: "Kupovina valute nije uspela."
                     )
                 }
