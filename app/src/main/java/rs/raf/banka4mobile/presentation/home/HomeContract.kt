@@ -55,13 +55,14 @@ interface HomeContract {
         data object PreviousAccountClicked : UiEvent()
         data object NextAccountClicked : UiEvent()
         data object OpenCardsClicked : UiEvent()
-        data object CreditInstallmentClicked : UiEvent()
+        data object OpenLoansClicked : UiEvent()
         data object OpenInfoClicked : UiEvent()
         data object DismissInfoClicked : UiEvent()
     }
 
     sealed class SideEffect {
         data class NavigateToCards(val accountNumber: String) : SideEffect()
+        data object NavigateToLoans : SideEffect()
         data class ShowToast(val message: String) : SideEffect()
     }
 

@@ -80,3 +80,12 @@ data class PaymentDto(
     val status: String
 )
 
+@Serializable
+data class LoanDto(
+    val amount: Double,
+    val currency: String,
+    val id: Long,
+    @SerialName("loan_type") val loanType: String,
+    @SerialName("monthly_installment") val monthlyInstallment: Double,
+    val status: String
+)

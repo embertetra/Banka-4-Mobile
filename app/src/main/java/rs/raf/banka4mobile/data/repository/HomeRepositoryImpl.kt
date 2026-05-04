@@ -6,9 +6,11 @@ import rs.raf.banka4mobile.data.local.session.SessionManager
 import rs.raf.banka4mobile.data.remote.api.BankingApi
 import rs.raf.banka4mobile.data.remote.dto.ApiErrorDto
 import rs.raf.banka4mobile.data.remote.dto.toDomain
+import rs.raf.banka4mobile.data.remote.dto.LoanDto
 import rs.raf.banka4mobile.domain.model.home.BankAccountDetails
 import rs.raf.banka4mobile.domain.model.home.BankAccountSummary
 import rs.raf.banka4mobile.domain.model.home.BankCard
+import rs.raf.banka4mobile.domain.model.home.BankLoan
 import rs.raf.banka4mobile.domain.model.home.BankPayment
 import rs.raf.banka4mobile.domain.repository.HomeRepository
 import java.io.IOException
@@ -46,6 +48,28 @@ class HomeRepositoryImpl @Inject constructor(
                 clientId = clientId,
                 accountNumber = accountNumber
             ).cards.map { it.toDomain() }
+        }
+    }
+
+    override suspend fun getLoans(): Result<List<BankLoan>> {
+        return withSessionContext { token, clientId ->
+            val responseBody = bankingApi.getLoansRaw(
+                authorization = "Bearer $token",
+                clientId = clientId
+            )
+
+            val bodyString = responseBody.string().trim()
+
+            if (bodyString.isEmpty() || bodyString == "null") {
+                emptyList()
+            } else {
+                try {
+                    val loansList = json.decodeFromString<List<LoanDto>>(bodyString)
+                    loansList.map { it.toDomain() }
+                } catch (e: Exception) {
+                    throw e
+                }
+            }
         }
     }
 

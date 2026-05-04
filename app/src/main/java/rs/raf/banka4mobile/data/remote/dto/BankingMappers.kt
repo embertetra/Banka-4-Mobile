@@ -3,6 +3,7 @@ package rs.raf.banka4mobile.data.remote.dto
 import rs.raf.banka4mobile.domain.model.home.BankAccountDetails
 import rs.raf.banka4mobile.domain.model.home.BankAccountSummary
 import rs.raf.banka4mobile.domain.model.home.BankCard
+import rs.raf.banka4mobile.domain.model.home.BankLoan
 import rs.raf.banka4mobile.domain.model.home.BankPayment
 
 fun AccountSummaryDto.toDomain(): BankAccountSummary {
@@ -66,6 +67,17 @@ fun PaymentDto.toDomain(): BankPayment {
         purpose = purpose,
         recipientAccount = recipientAccount,
         recipientName = recipientName,
+        status = status
+    )
+}
+
+fun LoanDto.toDomain(): BankLoan {
+    return BankLoan(
+        id = id,
+        amount = amount,
+        currency = currency,
+        loanType = loanType,
+        monthlyInstallment = monthlyInstallment,
         status = status
     )
 }

@@ -61,6 +61,7 @@ private val GradientColor = Color(0xFF005EAD)
 @Composable
 fun HomeScreen(
     onOpenCards: (String) -> Unit,
+    onOpenLoans: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
@@ -74,6 +75,7 @@ fun HomeScreen(
         viewModel.sideEffects.collect { sideEffect: HomeContract.SideEffect ->
             when (sideEffect) {
                 is HomeContract.SideEffect.NavigateToCards -> onOpenCards(sideEffect.accountNumber)
+                HomeContract.SideEffect.NavigateToLoans -> onOpenLoans()
                 is HomeContract.SideEffect.ShowToast -> {
                     Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
                 }
@@ -85,7 +87,7 @@ fun HomeScreen(
         state = state,
         onPrevious = { viewModel.onEvent(HomeContract.UiEvent.PreviousAccountClicked) },
         onNext = { viewModel.onEvent(HomeContract.UiEvent.NextAccountClicked) },
-        onCreditInstallmentClick = { viewModel.onEvent(HomeContract.UiEvent.CreditInstallmentClicked) },
+        onCreditInstallmentClick = { viewModel.onEvent(HomeContract.UiEvent.OpenLoansClicked) },
         onCardsClick = { viewModel.onEvent(HomeContract.UiEvent.OpenCardsClicked) },
         onInfoClick = { viewModel.onEvent(HomeContract.UiEvent.OpenInfoClicked) },
         onDismissInfo = { viewModel.onEvent(HomeContract.UiEvent.DismissInfoClicked) }

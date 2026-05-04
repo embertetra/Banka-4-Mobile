@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -25,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -45,6 +47,7 @@ private val GradientColor = Color(0xFF005EAD)
 
 @Composable
 fun CardsScreen(
+    onBack: () -> Unit,
     viewModel: CardsViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
@@ -90,6 +93,20 @@ fun CardsScreen(
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
+
+                    IconButton(
+                        onBack,
+                        Modifier.padding(16.dp),
+                        content = {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBackIosNew,
+                                contentDescription = "back",
+                                tint = GradientColor
+                            )
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
 
                     if (state.errorMessage != null) {
                         ErrorState(

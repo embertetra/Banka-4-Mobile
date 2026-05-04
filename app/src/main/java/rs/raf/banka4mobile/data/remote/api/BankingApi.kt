@@ -6,6 +6,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+import okhttp3.ResponseBody
 import rs.raf.banka4mobile.data.remote.dto.AccountCardsResponseDto
 import rs.raf.banka4mobile.data.remote.dto.AccountDetailsDto
 import rs.raf.banka4mobile.data.remote.dto.AccountSummaryDto
@@ -35,6 +36,12 @@ interface BankingApi {
         @Path("clientId") clientId: Int,
         @Path("accountNumber") accountNumber: String
     ): AccountCardsResponseDto
+
+    @GET("clients/{clientId}/loans")
+    suspend fun getLoansRaw(
+        @Header("Authorization") authorization: String,
+        @Path("clientId") clientId: Int
+    ): ResponseBody
 
     @GET("clients/{clientId}/accounts/{accountNumber}/payments")
     suspend fun getPayments(

@@ -39,6 +39,7 @@ import androidx.navigation.navArgument
 import rs.raf.banka4mobile.presentation.cards.CardsScreen
 import rs.raf.banka4mobile.presentation.exchange.ExchangeScreen
 import rs.raf.banka4mobile.presentation.home.HomeScreen
+import rs.raf.banka4mobile.presentation.loan.LoanScreen
 import rs.raf.banka4mobile.presentation.login.LoginScreen
 import rs.raf.banka4mobile.presentation.profile.ProfileScreen
 import rs.raf.banka4mobile.presentation.transfers.TransferScreen
@@ -88,6 +89,7 @@ private val routesWithBottomBar = setOf(
     Screen.Home.route,
     Screen.Cards.route,
     Screen.Cards.routeWithArg,
+    Screen.Loans.route,
     Screen.Transfers.route,
     Screen.Verification.route,
     Screen.Exchange.route,
@@ -137,7 +139,16 @@ fun AppNavigation() {
                 HomeScreen(
                     onOpenCards = { accountNumber ->
                         navController.navigate(Screen.Cards.createRoute(accountNumber))
+                    },
+                    onOpenLoans = {
+                        navController.navigate(Screen.Loans.route)
                     }
+                )
+            }
+
+            composable(Screen.Loans.route) {
+                LoanScreen(
+                    onBack = { navController.popBackStack() }
                 )
             }
 
@@ -151,7 +162,9 @@ fun AppNavigation() {
                     }
                 )
             ) {
-                CardsScreen()
+                CardsScreen(
+                    onBack = { navController.popBackStack() }
+                )
             }
 
             composable(Screen.Verification.route) {

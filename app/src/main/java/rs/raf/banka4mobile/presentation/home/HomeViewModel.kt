@@ -36,7 +36,7 @@ class HomeViewModel @Inject constructor(
             UiEvent.PreviousAccountClicked -> previousAccount()
             UiEvent.NextAccountClicked -> nextAccount()
             UiEvent.OpenCardsClicked -> openCards()
-            UiEvent.CreditInstallmentClicked -> onCreditInstallmentClicked()
+            UiEvent.OpenLoansClicked -> openLoans()
             UiEvent.OpenInfoClicked -> setState { copy(isInfoDialogVisible = true) }
             UiEvent.DismissInfoClicked -> setState { copy(isInfoDialogVisible = false) }
         }
@@ -52,11 +52,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun onCreditInstallmentClicked() {
+    private fun openLoans() {
         if (state.value.isLoading) return
 
         viewModelScope.launch {
-            _sideEffects.emit(SideEffect.ShowToast("Detalji rate za kredit uskoro."))
+            _sideEffects.emit(SideEffect.NavigateToLoans)
         }
     }
 
