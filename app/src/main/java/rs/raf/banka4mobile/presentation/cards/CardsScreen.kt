@@ -33,7 +33,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,8 +41,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.cards.CardContract.UiEvent
 import rs.raf.banka4mobile.presentation.components.AccountSwitcherHeader
 import java.util.Locale
-
-private val GradientColor = Color(0xFF005EAD)
 
 @Composable
 fun CardsScreen(
@@ -59,7 +56,7 @@ fun CardsScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         when {
             state.isLoading -> {
@@ -88,8 +85,7 @@ fun CardsScreen(
                         accountName = selectedAccount?.name ?: "",
                         accountNumber = selectedAccount?.accountNumber ?: "",
                         onPrevious = { viewModel.onEvent(UiEvent.PreviousAccountClicked) },
-                        onNext = { viewModel.onEvent(UiEvent.NextAccountClicked) },
-                        accentColor = GradientColor
+                        onNext = { viewModel.onEvent(UiEvent.NextAccountClicked) }
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -101,7 +97,7 @@ fun CardsScreen(
                             Icon(
                                 imageVector = Icons.Default.ArrowBackIosNew,
                                 contentDescription = "back",
-                                tint = GradientColor
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     )
@@ -119,7 +115,7 @@ fun CardsScreen(
                     } else if (state.cards.isEmpty()) {
                         Text(
                             text = "Nema kartica na ovom racunu.",
-                            color = Color(0xFF5A5A5A),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier
@@ -151,9 +147,9 @@ private fun LoadingState(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        CircularProgressIndicator(color = GradientColor)
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.height(14.dp))
-        Text(text = "Ucitavanje kartica...", color = Color(0xFF5A5A5A))
+        Text(text = "Ucitavanje kartica...", color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 
@@ -170,7 +166,7 @@ private fun ErrorState(
     ) {
         Text(
             text = message,
-            color = Color(0xFFB3261E),
+            color = MaterialTheme.colorScheme.error,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(12.dp))
@@ -184,7 +180,7 @@ private fun ErrorState(
 private fun BankCardItem(card: CardContract.CardItem) {
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFF)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -197,12 +193,12 @@ private fun BankCardItem(card: CardContract.CardItem) {
                     Icon(
                         imageVector = Icons.Default.CreditCard,
                         contentDescription = "Kartica",
-                        tint = GradientColor
+                        tint = MaterialTheme.colorScheme.primary
                     )
                     Text(
                         text = card.holderName,
                         style = MaterialTheme.typography.titleMedium,
-                        color = Color(0xFF1F1F1F),
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(start = 8.dp)
                     )
@@ -210,7 +206,7 @@ private fun BankCardItem(card: CardContract.CardItem) {
                 Text(
                     text = card.status,
                     style = MaterialTheme.typography.bodySmall,
-                    color = GradientColor,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -218,7 +214,7 @@ private fun BankCardItem(card: CardContract.CardItem) {
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 10.dp),
                 thickness = 1.dp,
-                color = GradientColor.copy(alpha = 0.20f)
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
             )
 
             InfoRow(label = "Broj kartice", value = card.cardNumberMasked)
@@ -242,12 +238,12 @@ private fun InfoRow(label: String, value: String) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF3A3A3A)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF1F1F1F),
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Medium
         )
     }
