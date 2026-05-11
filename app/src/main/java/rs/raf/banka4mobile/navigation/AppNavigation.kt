@@ -109,12 +109,20 @@ fun AppNavigation() {
                 BottomNavigationBar(
                     currentRoute = currentRoute,
                     onNavigate = { route ->
-                        navController.navigate(route) {
-                            popUpTo(Screen.Home.route) {
-                                saveState = true
+                        val isOnChildScreen =
+                            currentRoute?.startsWith(Screen.Cards.route) == true ||
+                                    currentRoute == Screen.Loans.route
+
+                        if (isOnChildScreen && route == Screen.Home.route) {
+                            navController.popBackStack(Screen.Home.route, inclusive = false)
+                        } else {
+                            navController.navigate(route) {
+                                popUpTo(Screen.Home.route) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = false
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
                     }
                 )
