@@ -173,14 +173,11 @@ fun AppNavigation() {
             }
 
             composable(Screen.Exchange.route) {
-                ExchangeScreen(
-                    onBack = { navController.popBackStack() }
-                )
+                ExchangeScreen()
             }
 
             composable(Screen.Profile.route) {
                 ProfileScreen(
-                    onBack = { navController.popBackStack() },
                     onLogoutSuccess = {
                         navController.navigate(Screen.Login.route) {
                             popUpTo(Screen.Home.route) {
