@@ -36,7 +36,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -44,13 +43,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.components.AccountSwitcherHeader
 import rs.raf.banka4mobile.presentation.transfers.TransferContract.UiEvent
-
-private val PrimaryBlue = Color(0xFF005EAD)
-private val ScreenBackground = Color(0xFFF5F7FC)
-private val CardBorder = Color(0xFFE3E8F3)
-private val SoftText = Color(0xFF6B7280)
-private val SuccessGreen = Color(0xFF1E7A3E)
-private val ErrorRed = Color(0xFFB3261E)
+import rs.raf.banka4mobile.ui.theme.ErrorRed
+import rs.raf.banka4mobile.ui.theme.SuccessGreen
 
 @Composable
 fun TransferScreen(
@@ -65,7 +59,7 @@ fun TransferScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(ScreenBackground)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         when {
             state.isLoading -> {
@@ -115,8 +109,7 @@ private fun TransferContent(
             accountName = selectedAccount?.name ?: "Račun",
             accountNumber = selectedAccount?.accountNumber ?: "",
             onPrevious = onPrevious,
-            onNext = onNext,
-            accentColor = PrimaryBlue
+            onNext = onNext
         )
 
         LazyColumn(
@@ -136,7 +129,7 @@ private fun TransferContent(
             item {
                 Text(
                     text = "Istorija transfera",
-                    color = PrimaryBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 4.dp)
@@ -147,7 +140,7 @@ private fun TransferContent(
                 item {
                     Text(
                         text = "Nema prethodnih transfera.",
-                        color = SoftText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -175,8 +168,8 @@ private fun TransferFormCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, CardBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
@@ -184,12 +177,12 @@ private fun TransferFormCard(
                 Icon(
                     imageVector = Icons.Default.SwapHoriz,
                     contentDescription = "Transfer",
-                    tint = PrimaryBlue
+                    tint = MaterialTheme.colorScheme.primary
                 )
 
                 Text(
                     text = "Novi transfer",
-                    color = PrimaryBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(start = 8.dp)
@@ -200,7 +193,7 @@ private fun TransferFormCard(
 
             Text(
                 text = "Sa računa",
-                color = SoftText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold
             )
@@ -210,19 +203,19 @@ private fun TransferFormCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFEFF6FF), RoundedCornerShape(14.dp))
-                    .border(1.dp, Color(0xFFD8E5FF), RoundedCornerShape(14.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(14.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(14.dp))
                     .padding(14.dp)
             ) {
                 Column {
                     Text(
                         text = selectedAccount?.accountNumber ?: "-",
-                        color = PrimaryBlue,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "Dostupno: ${formatTransferAmount(selectedAccount?.balance ?: 0.0)} ${selectedAccount?.currency ?: ""}",
-                        color = SoftText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -238,11 +231,11 @@ private fun TransferFormCard(
                 singleLine = true,
                 shape = RoundedCornerShape(14.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedIndicatorColor = PrimaryBlue,
-                    unfocusedIndicatorColor = CardBorder
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -256,11 +249,11 @@ private fun TransferFormCard(
                 singleLine = true,
                 shape = RoundedCornerShape(14.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedIndicatorColor = PrimaryBlue,
-                    unfocusedIndicatorColor = CardBorder
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -292,11 +285,14 @@ private fun TransferFormCard(
                     .fillMaxWidth()
                     .height(54.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryBlue)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 if (state.isSubmitting) {
                     CircularProgressIndicator(
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         strokeWidth = 2.dp
                     )
                 } else {
@@ -317,8 +313,8 @@ private fun TransferHistoryCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, CardBorder)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(
@@ -327,14 +323,14 @@ private fun TransferHistoryCard(
             ) {
                 Text(
                     text = "${formatTransferAmount(transfer.initialAmount)} RSD",
-                    color = PrimaryBlue,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
                     text = transfer.createdAt,
-                    color = SoftText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -343,19 +339,19 @@ private fun TransferHistoryCard(
 
             Text(
                 text = "Sa: ${transfer.fromAccount}",
-                color = Color(0xFF1F2937),
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyMedium
             )
 
             Text(
                 text = "Na: ${transfer.toAccount}",
-                color = Color(0xFF1F2937),
+                color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyMedium
             )
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 10.dp),
-                color = CardBorder
+                color = MaterialTheme.colorScheme.outline
             )
 
             Row(
@@ -364,13 +360,13 @@ private fun TransferHistoryCard(
             ) {
                 Text(
                     text = "Provizija: ${formatTransferAmount(transfer.commission)}",
-                    color = SoftText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall
                 )
 
                 Text(
                     text = "Finalno: ${formatTransferAmount(transfer.finalAmount)}",
-                    color = SoftText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -384,11 +380,11 @@ private fun LoadingState(modifier: Modifier = Modifier) {
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        CircularProgressIndicator(color = PrimaryBlue)
+        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         Spacer(modifier = Modifier.height(14.dp))
         Text(
             text = "Učitavanje transfera...",
-            color = SoftText
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

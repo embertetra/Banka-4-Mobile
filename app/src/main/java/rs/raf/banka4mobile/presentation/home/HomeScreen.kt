@@ -55,8 +55,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.components.AccountSwitcherHeader
 import java.util.Locale
-
-private val GradientColor = Color(0xFF005EAD)
+import rs.raf.banka4mobile.ui.theme.SuccessGreen
+import rs.raf.banka4mobile.ui.theme.ErrorRed
 
 @Composable
 fun HomeScreen(
@@ -109,7 +109,7 @@ private fun HomeScreenContent(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.background)
     ) {
         when {
             state.isLoading -> {
@@ -117,16 +117,16 @@ private fun HomeScreenContent(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    CircularProgressIndicator(color = GradientColor)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text(text = "Ucitavanje...", color = Color(0xFF5A5A5A))
+                    Text(text = "Ucitavanje...", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
             state.errorMessage != null -> {
                 Text(
                     text = state.errorMessage,
-                    color = Color(0xFFB3261E),
+                    color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
@@ -144,8 +144,7 @@ private fun HomeScreenContent(
                         accountName = selectedAccount.name,
                         accountNumber = selectedAccount.accountNumber,
                         onPrevious = onPrevious,
-                        onNext = onNext,
-                        accentColor = GradientColor
+                        onNext = onNext
                     )
 
                     BalanceCircle(
@@ -173,7 +172,7 @@ private fun HomeScreenContent(
                         ) {
                             Text(
                                 text = "Nema izvrsenih placanja na ovom racunu.",
-                                color = Color(0xFF5A5A5A),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 textAlign = TextAlign.Center,
                                 style = MaterialTheme.typography.bodyMedium
                             )
@@ -195,7 +194,7 @@ private fun HomeScreenContent(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(Color.Black.copy(alpha = 0.18f))
+                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f))
                     )
 
                     AccountInfoDialog(
@@ -208,7 +207,6 @@ private fun HomeScreenContent(
         }
     }
 }
-
 
 @Composable
 private fun ActionRow(
@@ -228,7 +226,7 @@ private fun ActionRow(
                 Icon(
                     imageVector = Icons.Default.RequestQuote,
                     contentDescription = "Rata",
-                    tint = GradientColor
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             onClick = onCreditInstallmentClick
@@ -240,7 +238,7 @@ private fun ActionRow(
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = "Informacije",
-                    tint = GradientColor
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             onClick = onInfoClick
@@ -252,7 +250,7 @@ private fun ActionRow(
                 Icon(
                     imageVector = Icons.Default.CreditCard,
                     contentDescription = "Kartice",
-                    tint = GradientColor
+                    tint = MaterialTheme.colorScheme.primary
                 )
             },
             onClick = onCardsClick
@@ -271,7 +269,7 @@ private fun ActionIconItem(
             modifier = Modifier
                 .size(width = 64.dp, height = 54.dp)
                 .clip(RoundedCornerShape(14.dp))
-                .background(Color(0xFFEFF6FF))
+                .background(MaterialTheme.colorScheme.primaryContainer)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
@@ -283,7 +281,7 @@ private fun ActionIconItem(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = Color(0xFF4B4B4B)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -291,12 +289,12 @@ private fun ActionIconItem(
 @Composable
 private fun TransactionCard(transaction: HomeContract.TransactionItem) {
     val isReceived = transaction.type == HomeContract.TransactionType.RECEIVED
-    val amountColor = if (isReceived) Color(0xFF4CAF50) else Color(0xFFEF5350)
+    val amountColor = if (isReceived) SuccessGreen else ErrorRed
     val amountPrefix = if (isReceived) "+" else "-"
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFF)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -309,7 +307,7 @@ private fun TransactionCard(transaction: HomeContract.TransactionItem) {
             Text(
                 text = transaction.name,
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color(0xFF1F1F1F),
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
 
@@ -325,7 +323,7 @@ private fun TransactionCard(transaction: HomeContract.TransactionItem) {
         HorizontalDivider(
             modifier = Modifier.padding(top = 8.dp),
             thickness = 1.dp,
-            color = GradientColor.copy(alpha = 0.20f)
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
         )
     }
 }
@@ -335,6 +333,8 @@ private fun BalanceCircle(
     account: HomeContract.AccountItem,
     modifier: Modifier = Modifier
 ) {
+    val glowColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.26f)
+
     Box(
         modifier = modifier
             .size(350.dp)
@@ -342,7 +342,7 @@ private fun BalanceCircle(
                 drawCircle(
                     brush = Brush.radialGradient(
                         colorStops = arrayOf(
-                            0.20f to GradientColor.copy(alpha = 0.26f),
+                            0.20f to glowColor,
                             1.00f to Color.Transparent
                         ),
                         center = Offset(size.width / 2f, size.height / 2f),
@@ -355,20 +355,20 @@ private fun BalanceCircle(
         Box(
             modifier = Modifier
                 .size(220.dp)
-                .background(color = Color.White, shape = CircleShape),
+                .background(color = MaterialTheme.colorScheme.surface, shape = CircleShape),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "STANJE",
-                    color = Color(0xFF7A7A7A),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Light,
                     fontSize = 16.sp
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = formatAmount(account.balance),
-                    color = Color.Black,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp,
                     textAlign = TextAlign.Center
@@ -381,11 +381,11 @@ private fun BalanceCircle(
                         end = 13.dp
                     ),
                     thickness = 0.5.dp,
-                    color = GradientColor.copy(alpha = 0.20f)
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
                 )
                 Text(
                     text = formatAmount(account.availableBalance),
-                    color = Color(0xFF6A6A6A),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Medium,
                     fontSize = 20.sp,
                     textAlign = TextAlign.Center
@@ -393,14 +393,14 @@ private fun BalanceCircle(
                 Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     text = "RASPOLOZIVA SREDSTVA",
-                    color = Color(0xFF7A7A7A),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Light,
                     fontSize = 14.sp
                 )
                 Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     text = account.currency,
-                    color = Color(0xFF7A7A7A),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 16.sp
                 )
             }
@@ -416,7 +416,7 @@ private fun AccountInfoDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color.White,
+        containerColor = MaterialTheme.colorScheme.surface,
         tonalElevation = 2.dp,
         title = {
             Row(
@@ -435,7 +435,7 @@ private fun AccountInfoDialog(
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Zatvori",
-                        tint = GradientColor
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -471,13 +471,13 @@ private fun InfoRow(label: String, value: String) {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF3A3A3A)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = value,
                 style = MaterialTheme.typography.bodyMedium,
-                color = Color(0xFF1F1F1F),
+                color = MaterialTheme.colorScheme.onSurface,
                 textAlign = TextAlign.End,
                 fontWeight = FontWeight.Medium
             )
@@ -486,7 +486,7 @@ private fun InfoRow(label: String, value: String) {
         HorizontalDivider(
             modifier = Modifier.padding(top = 6.dp),
             thickness = 0.8.dp,
-            color = GradientColor.copy(alpha = 0.20f)
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
         )
     }
 }

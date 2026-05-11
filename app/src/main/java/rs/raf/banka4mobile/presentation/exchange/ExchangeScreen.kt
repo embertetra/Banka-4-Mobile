@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -46,22 +47,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import java.util.Locale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.exchange.ExchangeContract.UiEvent
-
-private val PrimaryBlue = Color(0xFF270071)
-private val AccentBlue = Color(0xFF2E5BDB)
-private val ScreenBackground = Color(0xFFF5F7FC)
-private val CardBorder = Color(0xFFE3E8F3)
-private val SoftText = Color(0xFF6B7280)
-private val PositiveBlueBg = Color(0xFFEAF1FF)
-private val SuccessGreenBg = Color(0xFFEAF8EE)
-private val SuccessGreenBorder = Color(0xFFBFE3C9)
-private val SuccessGreenText = Color(0xFF1E7A3E)
+import rs.raf.banka4mobile.ui.theme.SuccessGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,27 +68,19 @@ fun ExchangeScreen(
     }
 
     Scaffold(
-        containerColor = ScreenBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = "Menjačnica",
-                        color = PrimaryBlue,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.headlineLarge
                     )
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Nazad",
-                            tint = PrimaryBlue
-                        )
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ScreenBackground
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -109,7 +93,7 @@ fun ExchangeScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = AccentBlue)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
 
@@ -131,7 +115,7 @@ fun ExchangeScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(paddingValues)
+                        .padding(top = paddingValues.calculateTopPadding())
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp, vertical = 8.dp)
                 ) {
@@ -202,14 +186,14 @@ private fun ExchangeRatesCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "Kursna lista",
-                color = PrimaryBlue,
+                color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -219,7 +203,7 @@ private fun ExchangeRatesCard(
             if (updatedAtText.isNotBlank()) {
                 Text(
                     text = "Poslednje ažuriranje: $updatedAtText",
-                    color = SoftText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -227,7 +211,7 @@ private fun ExchangeRatesCard(
             if (nextUpdateText.isNotBlank()) {
                 Text(
                     text = "Sledeće ažuriranje: $nextUpdateText",
-                    color = SoftText,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -238,7 +222,7 @@ private fun ExchangeRatesCard(
 
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 8.dp),
-                color = CardBorder
+                color = MaterialTheme.colorScheme.outline
             )
 
             rates.forEachIndexed { index, rate ->
@@ -247,7 +231,7 @@ private fun ExchangeRatesCard(
                 if (index != rates.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 8.dp),
-                        color = CardBorder
+                        color = MaterialTheme.colorScheme.outline
                     )
                 }
             }
@@ -277,12 +261,12 @@ private fun RateRow(rate: ExchangeRateUiModel) {
         Column(modifier = Modifier.weight(1.2f)) {
             Text(
                 text = rate.currencyCode,
-                color = PrimaryBlue,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = rate.currencyName,
-                color = SoftText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -298,7 +282,7 @@ private fun HeaderCell(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         modifier = modifier,
-        color = SoftText,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.SemiBold
     )
@@ -309,7 +293,7 @@ private fun ValueCell(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
         modifier = modifier,
-        color = Color(0xFF1F2937),
+        color = MaterialTheme.colorScheme.onSurface,
         style = MaterialTheme.typography.bodyMedium,
         fontWeight = FontWeight.Medium
     )
@@ -332,14 +316,14 @@ private fun ExchangeCalculatorCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "Kalkulator valuta",
-                color = PrimaryBlue,
+                color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -348,7 +332,7 @@ private fun ExchangeCalculatorCard(
 
             Text(
                 text = "Preračun kursa koristeći najnovije dostupne vrednosti.",
-                color = SoftText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall
             )
 
@@ -356,7 +340,7 @@ private fun ExchangeCalculatorCard(
 
             Text(
                 text = "Iznos",
-                color = SoftText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold
             )
@@ -371,11 +355,11 @@ private fun ExchangeCalculatorCard(
                 placeholder = { Text("Unesite iznos") },
                 shape = RoundedCornerShape(14.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedIndicatorColor = AccentBlue,
-                    unfocusedIndicatorColor = CardBorder
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -388,7 +372,7 @@ private fun ExchangeCalculatorCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Iz valute",
-                        color = SoftText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -409,8 +393,8 @@ private fun ExchangeCalculatorCard(
                     modifier = Modifier.height(56.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PositiveBlueBg,
-                        contentColor = AccentBlue
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 ) {
                     Icon(
@@ -424,7 +408,7 @@ private fun ExchangeCalculatorCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "U valutu",
-                        color = SoftText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -445,12 +429,12 @@ private fun ExchangeCalculatorCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = PositiveBlueBg,
+                        color = MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(18.dp)
                     )
                     .border(
                         width = 1.dp,
-                        color = Color(0xFFD8E5FF),
+                        color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(18.dp)
                     )
                     .padding(vertical = 18.dp, horizontal = 16.dp),
@@ -459,7 +443,7 @@ private fun ExchangeCalculatorCard(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = resultText,
-                        color = AccentBlue,
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -468,7 +452,7 @@ private fun ExchangeCalculatorCard(
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = helperText,
-                            color = SoftText,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
@@ -496,14 +480,14 @@ private fun ExchangePurchaseCard(
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "Kupovina valute",
-                color = PrimaryBlue,
+                color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -512,7 +496,7 @@ private fun ExchangePurchaseCard(
 
             Text(
                 text = "Unesite iznos i odaberite valute za izvršavanje kupovine.",
-                color = SoftText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall
             )
 
@@ -520,7 +504,7 @@ private fun ExchangePurchaseCard(
 
             Text(
                 text = "Iznos za kupovinu",
-                color = SoftText,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold
             )
@@ -535,11 +519,11 @@ private fun ExchangePurchaseCard(
                 placeholder = { Text("Unesite iznos") },
                 shape = RoundedCornerShape(14.dp),
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedIndicatorColor = AccentBlue,
-                    unfocusedIndicatorColor = CardBorder
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    disabledContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                    unfocusedIndicatorColor = MaterialTheme.colorScheme.outline
                 )
             )
 
@@ -552,7 +536,7 @@ private fun ExchangePurchaseCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Plaćate iz",
-                        color = SoftText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -571,7 +555,7 @@ private fun ExchangePurchaseCard(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "Kupujete",
-                        color = SoftText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -592,12 +576,12 @@ private fun ExchangePurchaseCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        color = PositiveBlueBg,
+                        color = MaterialTheme.colorScheme.primaryContainer,
                         shape = RoundedCornerShape(18.dp)
                     )
                     .border(
                         width = 1.dp,
-                        color = Color(0xFFD8E5FF),
+                        color = MaterialTheme.colorScheme.outline,
                         shape = RoundedCornerShape(18.dp)
                     )
                     .padding(vertical = 18.dp, horizontal = 16.dp),
@@ -606,7 +590,7 @@ private fun ExchangePurchaseCard(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = previewText,
-                        color = AccentBlue,
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.ExtraBold
                     )
@@ -615,7 +599,7 @@ private fun ExchangePurchaseCard(
 
                     Text(
                         text = "Procena koliko biste dobili",
-                        color = SoftText,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -628,19 +612,19 @@ private fun ExchangePurchaseCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
-                            color = SuccessGreenBg,
+                            color = SuccessGreen.copy(alpha = 0.12f),
                             shape = RoundedCornerShape(14.dp)
                         )
                         .border(
                             width = 1.dp,
-                            color = SuccessGreenBorder,
+                            color = SuccessGreen.copy(alpha = 0.28f),
                             shape = RoundedCornerShape(14.dp)
                         )
                         .padding(14.dp)
                 ) {
                     Text(
                         text = successMessage,
-                        color = SuccessGreenText,
+                        color = SuccessGreen,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium
                     )
@@ -657,13 +641,13 @@ private fun ExchangePurchaseCard(
                     .height(54.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PrimaryBlue,
-                    contentColor = Color.White
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
                 if (isBuying) {
                     CircularProgressIndicator(
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 } else {
                     Text(
@@ -702,11 +686,11 @@ private fun CurrencyDropdown(
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
             },
             colors = TextFieldDefaults.colors(
-                focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White,
-                disabledContainerColor = Color.White,
-                focusedIndicatorColor = AccentBlue,
-                unfocusedIndicatorColor = CardBorder
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                unfocusedIndicatorColor = MaterialTheme.colorScheme.outline
             )
         )
 
@@ -729,8 +713,8 @@ private fun CurrencyDropdown(
 
 private fun formatRate(value: Double): String {
     return if (value < 1) {
-        String.format("%.4f", value)
+        String.format(Locale.US, "%.4f", value)
     } else {
-        String.format("%.2f", value)
+        String.format(Locale.US, "%.2f", value)
     }
 }

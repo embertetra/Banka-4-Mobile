@@ -34,18 +34,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-
-private val PrimaryBlue = Color(0xFF270071)
-private val AccentBlue = Color(0xFF2E5BDB)
-private val ScreenBackground = Color(0xFFF5F7FC)
-private val CardBorder = Color(0xFFE3E8F3)
-private val SoftText = Color(0xFF6B7280)
-private val LogoutRed = Color(0xFFC62828)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,27 +61,19 @@ fun ProfileScreen(
     }
 
     Scaffold(
-        containerColor = ScreenBackground,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
                     Text(
                         text = "Profil",
-                        color = PrimaryBlue,
-                        fontWeight = FontWeight.Bold
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        style = MaterialTheme.typography.headlineLarge
                     )
                 },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Nazad",
-                            tint = PrimaryBlue
-                        )
-                    }
-                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = ScreenBackground
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
@@ -102,7 +86,7 @@ fun ProfileScreen(
                         .padding(paddingValues),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = AccentBlue)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
 
@@ -135,8 +119,8 @@ fun ProfileScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
                     ) {
                         Column(
@@ -145,7 +129,7 @@ fun ProfileScreen(
                             Text(
                                 text = profile?.fullName ?: "",
                                 style = MaterialTheme.typography.headlineSmall,
-                                color = PrimaryBlue,
+                                color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.ExtraBold
                             )
 
@@ -154,7 +138,7 @@ fun ProfileScreen(
                             Text(
                                 text = "Pregled naloga i osnovnih korisničkih informacija",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = SoftText
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
 
                             Spacer(modifier = Modifier.height(18.dp))
@@ -166,7 +150,7 @@ fun ProfileScreen(
 
                             HorizontalDivider(
                                 modifier = Modifier.padding(vertical = 10.dp),
-                                color = CardBorder
+                                color = MaterialTheme.colorScheme.outline
                             )
 
                             ProfileInfoRow(
@@ -176,7 +160,7 @@ fun ProfileScreen(
 
                             HorizontalDivider(
                                 modifier = Modifier.padding(vertical = 10.dp),
-                                color = CardBorder
+                                color = MaterialTheme.colorScheme.outline
                             )
 
                             ProfileInfoRow(
@@ -202,13 +186,13 @@ fun ProfileScreen(
                         enabled = !state.isLoading,
                         shape = RoundedCornerShape(16.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = LogoutRed,
-                            contentColor = Color.White
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
                         )
                     ) {
                         if (state.isLoading) {
                             CircularProgressIndicator(
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onError
                             )
                         } else {
                             Text(
@@ -235,12 +219,12 @@ private fun ProfileInfoRow(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                color = Color(0xFFF9FAFD),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(14.dp)
             )
             .border(
                 width = 1.dp,
-                color = Color(0xFFECEFF7),
+                color = MaterialTheme.colorScheme.outline,
                 shape = RoundedCornerShape(14.dp)
             )
             .padding(horizontal = 14.dp, vertical = 12.dp)
@@ -248,7 +232,7 @@ private fun ProfileInfoRow(
         Text(
             text = label,
             style = MaterialTheme.typography.labelMedium,
-            color = SoftText,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             fontWeight = FontWeight.SemiBold
         )
 
@@ -257,7 +241,7 @@ private fun ProfileInfoRow(
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge,
-            color = Color(0xFF1F2937),
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Medium
         )
     }

@@ -27,8 +27,10 @@ fun AccountSwitcherHeader(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
-    accentColor: Color = Color(0xFF005EAD)
+    accentColor: Color? = null
 ) {
+    val resolvedAccent = accentColor ?: MaterialTheme.colorScheme.primary
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -43,7 +45,7 @@ fun AccountSwitcherHeader(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Prethodni racun",
-                    tint = accentColor
+                    tint = resolvedAccent
                 )
             }
 
@@ -54,13 +56,13 @@ fun AccountSwitcherHeader(
                 Text(
                     text = accountName,
                     style = MaterialTheme.typography.titleLarge,
-                    color = accentColor,
+                    color = resolvedAccent,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = accountNumber,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = Color(0xFF5A5A5A)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -68,7 +70,7 @@ fun AccountSwitcherHeader(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Sledeci racun",
-                    tint = accentColor
+                    tint = resolvedAccent
                 )
             }
         }
@@ -76,7 +78,7 @@ fun AccountSwitcherHeader(
         HorizontalDivider(
             modifier = Modifier.padding(top = 8.dp),
             thickness = 1.dp,
-            color = accentColor.copy(alpha = 0.20f)
+            color = resolvedAccent.copy(alpha = 0.20f)
         )
     }
 }

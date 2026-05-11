@@ -29,15 +29,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-
-private val ScreenBackground = Color(0xFFF5F7FC)
-private val AccentBlue = Color(0xFF005EAD)
-private val CardBackground = Color(0xFFF8FAFF)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,13 +47,13 @@ fun LoanScreen(
 	}
 
 	Scaffold(
-		containerColor = ScreenBackground,
+		containerColor = MaterialTheme.colorScheme.background,
 		topBar = {
 			TopAppBar(
 				title = {
 					Text(
 						text = "Krediti i obaveze",
-						color = AccentBlue,
+						color = MaterialTheme.colorScheme.primary,
 						fontWeight = FontWeight.Bold
 					)
 				},
@@ -67,12 +62,12 @@ fun LoanScreen(
 						Icon(
 							imageVector = Icons.AutoMirrored.Filled.ArrowBack,
 							contentDescription = "Nazad",
-							tint = AccentBlue
+							tint = MaterialTheme.colorScheme.primary
 						)
 					}
 				},
 				colors = TopAppBarDefaults.topAppBarColors(
-					containerColor = ScreenBackground
+					containerColor = MaterialTheme.colorScheme.background
 				)
 			)
 		}
@@ -85,7 +80,7 @@ fun LoanScreen(
 						.padding(paddingValues),
 					contentAlignment = Alignment.Center
 				) {
-					CircularProgressIndicator(color = AccentBlue)
+					CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
 				}
 			}
 
@@ -115,7 +110,7 @@ fun LoanScreen(
 				) {
 					Text(
 						text = "Nema aktivnih rata za prikaz.",
-						color = Color(0xFF5A5A5A),
+						color = MaterialTheme.colorScheme.onSurfaceVariant,
 						textAlign = androidx.compose.ui.text.style.TextAlign.Center
 					)
 				}
@@ -139,7 +134,7 @@ fun LoanScreen(
 							HorizontalDivider(
 								modifier = Modifier.padding(top = 4.dp),
 								thickness = 1.dp,
-								color = AccentBlue.copy(alpha = 0.18f)
+								color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
 							)
 						}
 					}
@@ -153,7 +148,7 @@ fun LoanScreen(
 private fun LoanCard(loan: LoanContract.LoanItem) {
 	Card(
 		shape = RoundedCornerShape(16.dp),
-		colors = CardDefaults.cardColors(containerColor = CardBackground),
+		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
 		modifier = Modifier.fillMaxWidth()
 	) {
 		Column(modifier = Modifier.padding(16.dp)) {
@@ -178,12 +173,12 @@ private fun LoanInfoRow(label: String, value: String) {
 		Text(
 			text = label,
 			style = MaterialTheme.typography.bodyMedium,
-			color = Color(0xFF3A3A3A)
+			color = MaterialTheme.colorScheme.onSurfaceVariant
 		)
 		Text(
 			text = value,
 			style = MaterialTheme.typography.bodyMedium,
-			color = Color(0xFF1F1F1F),
+			color = MaterialTheme.colorScheme.onSurface,
 			fontWeight = FontWeight.Medium
 		)
 	}

@@ -17,6 +17,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -202,11 +203,11 @@ private fun BottomNavigationBar(
     Column {
         HorizontalDivider(
             thickness = 0.5.dp,
-            color = Color(0xFFE9F2FF)
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.06f)
         )
 
         NavigationBar(
-            containerColor = Color.White,
+            containerColor = MaterialTheme.colorScheme.surface,
             tonalElevation = 0.2.dp
         ) {
             bottomTabs.forEach { tab ->
