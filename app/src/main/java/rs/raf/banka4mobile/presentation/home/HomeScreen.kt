@@ -60,6 +60,7 @@ import rs.raf.banka4mobile.ui.theme.ErrorRed
 fun HomeScreen(
     onOpenCards: (String) -> Unit,
     onOpenLoans: () -> Unit,
+    onOpenTransactions: (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
@@ -74,6 +75,9 @@ fun HomeScreen(
             when (sideEffect) {
                 is HomeContract.SideEffect.NavigateToCards -> onOpenCards(sideEffect.accountNumber)
                 HomeContract.SideEffect.NavigateToLoans -> onOpenLoans()
+                is HomeContract.SideEffect.NavigateToTransactions -> {
+                    onOpenTransactions(sideEffect.accountNumber)
+                }
                 is HomeContract.SideEffect.ShowToast -> {
                     Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
                 }
@@ -87,6 +91,7 @@ fun HomeScreen(
         onNext = { viewModel.onEvent(HomeContract.UiEvent.NextAccountClicked) },
         onCreditInstallmentClick = { viewModel.onEvent(HomeContract.UiEvent.OpenLoansClicked) },
         onCardsClick = { viewModel.onEvent(HomeContract.UiEvent.OpenCardsClicked) },
+        onOpenAllTransactions = { viewModel.onEvent(HomeContract.UiEvent.OpenTransactionsClicked) },
         onInfoClick = { viewModel.onEvent(HomeContract.UiEvent.OpenInfoClicked) },
         onDismissInfo = { viewModel.onEvent(HomeContract.UiEvent.DismissInfoClicked) }
     )
@@ -99,6 +104,7 @@ private fun HomeScreenContent(
     onNext: () -> Unit,
     onCreditInstallmentClick: () -> Unit,
     onCardsClick: () -> Unit,
+    onOpenAllTransactions: () -> Unit,
     onInfoClick: () -> Unit,
     onDismissInfo: () -> Unit
 ) {
@@ -172,13 +178,24 @@ private fun HomeScreenContent(
                             )
                         }
                     } else {
+                        val extraBottomScrollSpace = 100.dp
+                        val transactionsPreview = state.transactions.take(4)
+
                         LazyColumn(
                             modifier = Modifier.weight(1f),
-                            contentPadding = PaddingValues(bottom = 12.dp),
+                            contentPadding = PaddingValues(bottom = 12.dp, start = 16.dp, end = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
-                            items(items = state.transactions, key = { it.id }) { transaction ->
+                            items(items = transactionsPreview, key = { it.id }) { transaction ->
                                 TransactionCard(transaction = transaction)
+                            }
+
+                            item {
+                                OpenAllTransactionsCard(onClick = onOpenAllTransactions)
+                            }
+
+                            item {
+                                Spacer(modifier = Modifier.height(extraBottomScrollSpace))
                             }
                         }
                     }
@@ -311,6 +328,38 @@ private fun TransactionCard(transaction: HomeContract.TransactionItem) {
                 fontWeight = FontWeight.Bold,
                 color = amountColor,
                 textAlign = TextAlign.End
+            )
+        }
+
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 8.dp),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
+        )
+    }
+}
+
+@Composable
+private fun OpenAllTransactionsCard(onClick: () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Pogledaj sve transakcije",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
             )
         }
 

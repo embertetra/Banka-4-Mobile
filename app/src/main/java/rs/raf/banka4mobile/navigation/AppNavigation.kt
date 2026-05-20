@@ -80,6 +80,7 @@ import rs.raf.banka4mobile.presentation.home.HomeScreen
 import rs.raf.banka4mobile.presentation.loan.LoanScreen
 import rs.raf.banka4mobile.presentation.login.LoginScreen
 import rs.raf.banka4mobile.presentation.profile.ProfileScreen
+import rs.raf.banka4mobile.presentation.transactionsoverview.TransactionsOverviewScreen
 import rs.raf.banka4mobile.presentation.transfers.TransferScreen
 import rs.raf.banka4mobile.presentation.verification.VerificationScreen
 import rs.raf.banka4mobile.ui.theme.Banka4MobileThemeTokens
@@ -135,6 +136,8 @@ private val routesWithBottomBar = setOf(
     Screen.Cards.route,
     Screen.Cards.routeWithArg,
     Screen.Loans.route,
+    Screen.TransactionsOverview.route,
+    Screen.TransactionsOverview.routeWithArg,
     Screen.Transfers.route,
     Screen.Verification.route,
     Screen.Exchange.route,
@@ -157,7 +160,8 @@ fun AppNavigation() {
                     onNavigate = { route ->
                         val isOnChildScreen =
                             currentRoute?.startsWith(Screen.Cards.route) == true ||
-                                    currentRoute == Screen.Loans.route
+                                    currentRoute == Screen.Loans.route ||
+                                    currentRoute?.startsWith(Screen.TransactionsOverview.route) == true
 
                         if (isOnChildScreen && route == Screen.Home.route) {
                             navController.popBackStack(Screen.Home.route, inclusive = false)
@@ -197,6 +201,9 @@ fun AppNavigation() {
                     },
                     onOpenLoans = {
                         navController.navigate(Screen.Loans.route)
+                    },
+                    onOpenTransactions = { accountNumber ->
+                        navController.navigate(Screen.TransactionsOverview.createRoute(accountNumber))
                     }
                 )
             }
@@ -230,6 +237,29 @@ fun AppNavigation() {
                 ExchangeScreen()
             }
 
+            composable(
+                route = Screen.TransactionsOverview.routeWithArg,
+                arguments = listOf(
+                    navArgument(Screen.TransactionsOverview.ACCOUNT_NUMBER_ARG) {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) {
+                TransactionsOverviewScreen(
+                    onBack = {
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        }
+                    }
+                )
+            }
+
             composable(Screen.Profile.route) {
                 ProfileScreen(
                     onLogoutSuccess = {
@@ -250,6 +280,7 @@ private fun resolveBottomBarRoute(currentRoute: String?): String? {
     return when {
         currentRoute?.startsWith(Screen.Cards.route) == true -> Screen.Home.route
         currentRoute == Screen.Loans.route -> Screen.Home.route
+        currentRoute?.startsWith(Screen.TransactionsOverview.route) == true -> Screen.Home.route
         else -> currentRoute
     }
 }

@@ -37,6 +37,7 @@ class HomeViewModel @Inject constructor(
             UiEvent.NextAccountClicked -> nextAccount()
             UiEvent.OpenCardsClicked -> openCards()
             UiEvent.OpenLoansClicked -> openLoans()
+            UiEvent.OpenTransactionsClicked -> openTransactions()
             UiEvent.OpenInfoClicked -> setState { copy(isInfoDialogVisible = true) }
             UiEvent.DismissInfoClicked -> setState { copy(isInfoDialogVisible = false) }
         }
@@ -57,6 +58,16 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch {
             _sideEffects.emit(SideEffect.NavigateToLoans)
+        }
+    }
+
+    private fun openTransactions() {
+        if (state.value.isLoading) return
+
+        val accountNumber = state.value.selectedAccount?.accountNumber ?: return
+
+        viewModelScope.launch {
+            _sideEffects.emit(SideEffect.NavigateToTransactions(accountNumber))
         }
     }
 

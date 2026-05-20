@@ -21,6 +21,15 @@ sealed class Screen(val route: String) {
         }
     }
 
+    data object TransactionsOverview : Screen("transactionsOverview") {
+        const val ACCOUNT_NUMBER_ARG = "accountNumber"
+        val routeWithArg = "$route?$ACCOUNT_NUMBER_ARG={$ACCOUNT_NUMBER_ARG}"
+
+        fun createRoute(accountNumber: String): String {
+            return "$route?$ACCOUNT_NUMBER_ARG=${Uri.encode(accountNumber)}"
+        }
+    }
+
     data object Verification : Screen("verification")
 
     data object Exchange : Screen("exchange")
