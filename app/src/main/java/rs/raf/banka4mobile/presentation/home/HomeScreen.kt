@@ -12,8 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -137,8 +135,6 @@ private fun HomeScreenContent(
                         .fillMaxSize()
                         .blur(if (state.isInfoDialogVisible) 5.dp else 0.dp)
                         .statusBarsPadding()
-                        .imePadding()
-                        .navigationBarsPadding()
                 ) {
                     AccountSwitcherHeader(
                         accountName = selectedAccount.name,
@@ -151,14 +147,12 @@ private fun HomeScreenContent(
                         account = selectedAccount,
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(top = 8.dp)
                     )
 
                     ActionRow(
                         onCreditInstallmentClick = onCreditInstallmentClick,
                         onInfoClick = onInfoClick,
                         onCardsClick = onCardsClick,
-                        modifier = Modifier.padding(top = 14.dp)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))

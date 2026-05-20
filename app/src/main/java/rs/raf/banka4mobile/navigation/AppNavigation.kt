@@ -1,5 +1,6 @@
 package rs.raf.banka4mobile.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
@@ -14,7 +15,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -34,6 +34,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -57,7 +58,9 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -79,6 +82,7 @@ import rs.raf.banka4mobile.presentation.login.LoginScreen
 import rs.raf.banka4mobile.presentation.profile.ProfileScreen
 import rs.raf.banka4mobile.presentation.transfers.TransferScreen
 import rs.raf.banka4mobile.presentation.verification.VerificationScreen
+import rs.raf.banka4mobile.ui.theme.Banka4MobileThemeTokens
 
 private data class BottomTab(
     val label: String,
@@ -86,6 +90,12 @@ private data class BottomTab(
     val unselectedIcon: ImageVector,
     val route: String?
 )
+
+private enum class LabelVisibilityMode {
+    Hidden,
+    SelectedOnly,
+    All
+}
 
 private val bottomTabs = listOf(
     BottomTab(
@@ -131,6 +141,7 @@ private val routesWithBottomBar = setOf(
     Screen.Profile.route
 )
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -163,11 +174,11 @@ fun AppNavigation() {
                 )
             }
         }
-    ) { innerPadding ->
+    ) { _ ->
         NavHost(
             navController = navController,
             startDestination = Screen.Login.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
         ) {
             composable(Screen.Login.route) {
                 LoginScreen(
@@ -253,6 +264,18 @@ private fun CutoutBottomNavigationBar(
     val circleGap = 6.dp
 
     val buttons = bottomTabs
+    val isDarkTheme = isSystemInDarkTheme()
+    val barBackgroundColor = Banka4MobileThemeTokens.colors.bottomBarSurface
+    val barShadowElevation = if (isDarkTheme) 18.dp else 10.dp
+    val barShadowColor = Color.Black.copy(alpha = 0.90f)
+    val barTopEdgeColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)
+
+    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+    val labelVisibilityMode = when {
+        screenWidthDp < 360 -> LabelVisibilityMode.Hidden
+        screenWidthDp < 420 -> LabelVisibilityMode.SelectedOnly
+        else -> LabelVisibilityMode.All
+    }
     val selectedIndex = buttons.indexOfFirst { it.route == selectedRoute }.let { index ->
         if (index == -1) 0 else index
     }
@@ -308,7 +331,7 @@ private fun CutoutBottomNavigationBar(
                 modifier = Modifier
                     .offset { circleOffset }
                     .zIndex(1f),
-                color = MaterialTheme.colorScheme.surface,
+                color = barBackgroundColor,
                 radius = circleRadius,
                 icon = selectedTab.selectedIcon,
                 contentDescription = selectedTab.label,
@@ -319,14 +342,20 @@ private fun CutoutBottomNavigationBar(
         Row(
             modifier = Modifier
                 .onPlaced { barSize = it.size }
-                .shadow(6.dp, barShape, clip = false)
+                .shadow(
+                    elevation = barShadowElevation,
+                    shape = barShape,
+                    clip = false,
+                    ambientColor = barShadowColor,
+                    spotColor = barShadowColor
+                )
                 .graphicsLayer {
                     shape = barShape
                     clip = true
                     compositingStrategy = CompositingStrategy.Offscreen
                 }
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface)
+                .background(barBackgroundColor)
                 .drawWithContent {
                     drawContent()
                     if (cutoutOffset > 0f) {
@@ -336,6 +365,34 @@ private fun CutoutBottomNavigationBar(
                             center = Offset(cutoutOffset, 0f),
                             blendMode = BlendMode.Clear
                         )
+                        drawRect(
+                            color = Color.Transparent,
+                            topLeft = Offset(cutoutOffset - clearRadiusPx, 0f),
+                            size = Size(width = clearRadiusPx * 2f, height = 8.dp.toPx()),
+                            blendMode = BlendMode.Clear
+                        )
+
+                        val leftEdgeEnd = (cutoutOffset - clearRadiusPx).coerceAtLeast(0f)
+                        val rightEdgeStart = (cutoutOffset + clearRadiusPx).coerceAtMost(size.width)
+                        val topY = 0f
+                        val stroke = 1.dp.toPx()
+
+                        if (leftEdgeEnd > 0f) {
+                            drawLine(
+                                color = barTopEdgeColor,
+                                start = Offset(0f, topY),
+                                end = Offset(leftEdgeEnd, topY),
+                                strokeWidth = stroke
+                            )
+                        }
+                        if (rightEdgeStart < size.width) {
+                            drawLine(
+                                color = barTopEdgeColor,
+                                start = Offset(rightEdgeStart, topY),
+                                end = Offset(size.width, topY),
+                                strokeWidth = stroke
+                            )
+                        }
                     }
                 },
             horizontalArrangement = Arrangement.SpaceAround
@@ -362,7 +419,20 @@ private fun CutoutBottomNavigationBar(
                             modifier = Modifier.alpha(iconAlpha)
                         )
                     },
-                    label = { Text(tab.label) },
+                    label = when (labelVisibilityMode) {
+                        LabelVisibilityMode.Hidden -> null
+                        LabelVisibilityMode.SelectedOnly,
+                        LabelVisibilityMode.All -> {
+                            {
+                                Text(
+                                    text = tab.label,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
+                    },
+                    alwaysShowLabel = labelVisibilityMode == LabelVisibilityMode.All,
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -476,11 +546,25 @@ private fun CircleButton(
     contentDescription: String,
     iconColor: Color
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val circleShadowElevation = if (isDarkTheme) 14.dp else 8.dp
+    val circleShadowColor = if (isDarkTheme) {
+        Color.Black.copy(alpha = 0.75f)
+    } else {
+        Color.Black.copy(alpha = 0.28f)
+    }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(radius * 2)
-            .shadow(6.dp, CircleShape, clip = false)
+            .shadow(
+                elevation = circleShadowElevation,
+                shape = CircleShape,
+                clip = false,
+                ambientColor = circleShadowColor,
+                spotColor = circleShadowColor
+            )
             .clip(CircleShape)
             .background(color)
     ) {

@@ -108,6 +108,8 @@ fun ExchangeScreen(
             }
 
             else -> {
+                val extraBottomScrollSpace = 116.dp
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -166,7 +168,7 @@ fun ExchangeScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(extraBottomScrollSpace))
                 }
             }
         }
