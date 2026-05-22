@@ -44,8 +44,18 @@ class TransactionsOverviewViewModel @Inject constructor(
             UiEvent.ScreenOpened -> loadInitialData()
             UiEvent.PreviousAccountClicked -> previousAccount()
             UiEvent.NextAccountClicked -> nextAccount()
+            UiEvent.ToggleFiltersClicked -> setState {
+                copy(isFiltersVisible = !isFiltersVisible)
+            }
             is UiEvent.TypeFilterChanged -> setState { copy(typeFilter = event.filter) }
+            is UiEvent.AmountSortOrderChanged -> setState { copy(amountSortOrder = event.sortOrder) }
             is UiEvent.DateSortOrderChanged -> setState { copy(dateSortOrder = event.sortOrder) }
+            is UiEvent.ToggleTransactionExpanded -> setState {
+                val nextExpanded = expandedTransactionIds.toMutableSet().apply {
+                    if (contains(event.id)) remove(event.id) else add(event.id)
+                }
+                copy(expandedTransactionIds = nextExpanded)
+            }
             UiEvent.BackClicked -> navigateBack()
         }
     }
@@ -80,7 +90,8 @@ class TransactionsOverviewViewModel @Inject constructor(
                             errorMessage = null,
                             accounts = accounts.map { it.toUiAccount() },
                             selectedAccountIndex = selectedIndex,
-                            transactions = emptyList()
+                            transactions = emptyList(),
+                            expandedTransactionIds = emptySet()
                         )
                     }
 
@@ -104,7 +115,14 @@ class TransactionsOverviewViewModel @Inject constructor(
         val selectedAccountNumber = selectedAccount.accountNumber
 
         viewModelScope.launch {
-            setState { copy(isLoading = true, errorMessage = null, transactions = emptyList()) }
+            setState {
+                copy(
+                    isLoading = true,
+                    errorMessage = null,
+                    transactions = emptyList(),
+                    expandedTransactionIds = emptySet()
+                )
+            }
 
             homeRepository.getPayments(selectedAccountNumber)
                 .onSuccess { payments ->
@@ -112,7 +130,8 @@ class TransactionsOverviewViewModel @Inject constructor(
                         copy(
                             isLoading = false,
                             errorMessage = null,
-                            transactions = payments.toUiTransactions(selectedAccountNumber)
+                            transactions = payments.toUiTransactions(selectedAccountNumber),
+                            expandedTransactionIds = emptySet()
                         )
                     }
                 }
@@ -185,7 +204,13 @@ class TransactionsOverviewViewModel @Inject constructor(
                 amount = payment.amount,
                 currency = payment.currency,
                 type = transactionType,
-                createdAtEpochMillis = parseCreatedAt(payment.createdAt)
+                createdAtEpochMillis = parseCreatedAt(payment.createdAt),
+                createdAt = payment.createdAt,
+                status = payment.status,
+                purpose = payment.purpose,
+                paymentCode = payment.paymentCode,
+                recipientAccount = payment.recipientAccount,
+                payerAccount = payment.payerAccount
             )
         }
     }

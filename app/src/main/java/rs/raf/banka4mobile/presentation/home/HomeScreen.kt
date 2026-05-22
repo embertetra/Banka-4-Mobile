@@ -2,6 +2,7 @@ package rs.raf.banka4mobile.presentation.home
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,6 +21,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CreditCard
@@ -275,12 +277,23 @@ private fun ActionIconItem(
     icon: @Composable () -> Unit,
     onClick: () -> Unit
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
                 .size(width = 64.dp, height = 54.dp)
                 .clip(RoundedCornerShape(14.dp))
                 .background(MaterialTheme.colorScheme.primaryContainer)
+                .border(
+                    width = if (isDarkTheme) 0.dp else 1.dp,
+                    color = if (isDarkTheme) {
+                        Color.Transparent
+                    } else {
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
+                    },
+                    shape = RoundedCornerShape(14.dp)
+                )
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
@@ -299,13 +312,29 @@ private fun ActionIconItem(
 
 @Composable
 private fun TransactionCard(transaction: HomeContract.TransactionItem) {
+    val isDarkTheme = isSystemInDarkTheme()
     val isReceived = transaction.type == HomeContract.TransactionType.RECEIVED
     val amountColor = if (isReceived) SuccessGreen else ErrorRed
     val amountPrefix = if (isReceived) "+" else "-"
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDarkTheme) {
+                MaterialTheme.colorScheme.surfaceVariant
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDarkTheme) 3.dp else 1.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            width = if (isDarkTheme) 0.dp else 1.dp,
+            color = if (isDarkTheme) {
+                Color.Transparent
+            } else {
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.20f)
+            }
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -341,9 +370,26 @@ private fun TransactionCard(transaction: HomeContract.TransactionItem) {
 
 @Composable
 private fun OpenAllTransactionsCard(onClick: () -> Unit) {
+    val isDarkTheme = isSystemInDarkTheme()
+
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDarkTheme) {
+                MaterialTheme.colorScheme.surfaceVariant
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDarkTheme) 3.dp else 1.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            width = if (isDarkTheme) 0.dp else 1.dp,
+            color = if (isDarkTheme) {
+                Color.Transparent
+            } else {
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.20f)
+            }
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)

@@ -9,7 +9,10 @@ interface TransactionsOverviewContract {
         val selectedAccountIndex: Int = 0,
         val transactions: List<TransactionItem> = emptyList(),
         val typeFilter: TypeFilter = TypeFilter.ALL,
-        val dateSortOrder: DateSortOrder = DateSortOrder.DESCENDING
+        val amountSortOrder: AmountSortOrder = AmountSortOrder.DESCENDING,
+        val dateSortOrder: DateSortOrder = DateSortOrder.DESCENDING,
+        val isFiltersVisible: Boolean = false,
+        val expandedTransactionIds: Set<String> = emptySet()
     ) {
         val selectedAccount: AccountItem?
             get() = accounts.getOrNull(selectedAccountIndex)
@@ -22,14 +25,34 @@ interface TransactionsOverviewContract {
                     TypeFilter.SENT -> transactions.filter { it.type == TransactionType.SENT }
                 }
 
-                return when (dateSortOrder) {
-                    DateSortOrder.ASCENDING -> byType.sortedBy {
-                        val normalized = kotlin.math.abs(it.amount)
-                        if (it.type == TransactionType.SENT) -normalized else normalized
+                return byType.sortedWith { first, second ->
+                    val firstSignedAmount = if (first.type == TransactionType.SENT) {
+                        -kotlin.math.abs(first.amount)
+                    } else {
+                        kotlin.math.abs(first.amount)
                     }
-                    DateSortOrder.DESCENDING -> byType.sortedByDescending {
-                        val normalized = kotlin.math.abs(it.amount)
-                        if (it.type == TransactionType.SENT) -normalized else normalized
+                    val secondSignedAmount = if (second.type == TransactionType.SENT) {
+                        -kotlin.math.abs(second.amount)
+                    } else {
+                        kotlin.math.abs(second.amount)
+                    }
+
+                    val amountCompare = when (amountSortOrder) {
+                        AmountSortOrder.ASCENDING -> firstSignedAmount.compareTo(secondSignedAmount)
+                        AmountSortOrder.DESCENDING -> secondSignedAmount.compareTo(firstSignedAmount)
+                    }
+
+                    if (amountCompare != 0) {
+                        amountCompare
+                    } else {
+                        when (dateSortOrder) {
+                            DateSortOrder.ASCENDING -> {
+                                first.createdAtEpochMillis.compareTo(second.createdAtEpochMillis)
+                            }
+                            DateSortOrder.DESCENDING -> {
+                                second.createdAtEpochMillis.compareTo(first.createdAtEpochMillis)
+                            }
+                        }
                     }
                 }
             }
@@ -45,6 +68,11 @@ interface TransactionsOverviewContract {
         ALL,
         RECEIVED,
         SENT
+    }
+
+    enum class AmountSortOrder {
+        ASCENDING,
+        DESCENDING
     }
 
     enum class DateSortOrder {
@@ -63,15 +91,24 @@ interface TransactionsOverviewContract {
         val amount: Double,
         val currency: String,
         val type: TransactionType,
-        val createdAtEpochMillis: Long
+        val createdAtEpochMillis: Long,
+        val createdAt: String,
+        val status: String,
+        val purpose: String,
+        val paymentCode: String,
+        val recipientAccount: String,
+        val payerAccount: String
     )
 
     sealed class UiEvent {
         data object ScreenOpened : UiEvent()
         data object PreviousAccountClicked : UiEvent()
         data object NextAccountClicked : UiEvent()
+        data object ToggleFiltersClicked : UiEvent()
         data class TypeFilterChanged(val filter: TypeFilter) : UiEvent()
+        data class AmountSortOrderChanged(val sortOrder: AmountSortOrder) : UiEvent()
         data class DateSortOrderChanged(val sortOrder: DateSortOrder) : UiEvent()
+        data class ToggleTransactionExpanded(val id: String) : UiEvent()
         data object BackClicked : UiEvent()
     }
 
