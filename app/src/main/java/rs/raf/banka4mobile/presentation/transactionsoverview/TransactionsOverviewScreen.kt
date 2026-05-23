@@ -13,7 +13,6 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.components.AccountSwitcherHeader
+import rs.raf.banka4mobile.presentation.components.BottomBarScrollSpacer
 import rs.raf.banka4mobile.presentation.transactionsoverview.TransactionsOverviewContract.AmountSortOrder
 import rs.raf.banka4mobile.presentation.transactionsoverview.TransactionsOverviewContract.DateSortOrder
 import rs.raf.banka4mobile.presentation.transactionsoverview.TransactionsOverviewContract.SideEffect
@@ -66,7 +66,6 @@ fun TransactionsOverviewScreen(
     viewModel: TransactionsOverviewViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
-    val extraBottomScrollSpace = 116.dp
 
     LaunchedEffect(Unit) {
         viewModel.onEvent(TransactionsOverviewContract.UiEvent.ScreenOpened)
@@ -181,7 +180,6 @@ fun TransactionsOverviewScreen(
                                 .fillMaxSize()
                                 .padding(horizontal = 16.dp)
                                 .padding(top = 12.dp),
-                            contentPadding = PaddingValues(bottom = extraBottomScrollSpace),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             items(
@@ -199,6 +197,10 @@ fun TransactionsOverviewScreen(
                                         )
                                     }
                                 )
+                            }
+
+                            item {
+                                BottomBarScrollSpacer()
                             }
                         }
                     }

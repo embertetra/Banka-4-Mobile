@@ -1,6 +1,5 @@
 package rs.raf.banka4mobile.navigation
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
@@ -12,10 +11,18 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
@@ -30,12 +37,14 @@ import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,9 +67,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onPlaced
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -79,6 +86,7 @@ import rs.raf.banka4mobile.presentation.exchange.ExchangeScreen
 import rs.raf.banka4mobile.presentation.home.HomeScreen
 import rs.raf.banka4mobile.presentation.loan.LoanScreen
 import rs.raf.banka4mobile.presentation.login.LoginScreen
+import rs.raf.banka4mobile.presentation.components.BottomBarBodyHeight
 import rs.raf.banka4mobile.presentation.profile.ProfileScreen
 import rs.raf.banka4mobile.presentation.transactionsoverview.TransactionsOverviewScreen
 import rs.raf.banka4mobile.presentation.transfers.TransferScreen
@@ -91,12 +99,6 @@ private data class BottomTab(
     val unselectedIcon: ImageVector,
     val route: String?
 )
-
-private enum class LabelVisibilityMode {
-    Hidden,
-    SelectedOnly,
-    All
-}
 
 private val bottomTabs = listOf(
     BottomTab(
@@ -144,7 +146,6 @@ private val routesWithBottomBar = setOf(
     Screen.Profile.route
 )
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -178,11 +179,13 @@ fun AppNavigation() {
                 )
             }
         }
-    ) { _ ->
+    ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Screen.Login.route,
             modifier = Modifier
+                .padding(top = innerPadding.calculateTopPadding())
+                .consumeWindowInsets(innerPadding)
         ) {
             composable(Screen.Login.route) {
                 LoginScreen(
@@ -286,13 +289,14 @@ private fun resolveBottomBarRoute(currentRoute: String?): String? {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 private fun CutoutBottomNavigationBar(
     selectedRoute: String?,
     onNavigate: (String) -> Unit
 ) {
-    val circleRadius = 26.dp
-    val cornerRadius = 24.dp
-    val circleGap = 6.dp
+    val circleRadius = 22.dp
+    val cornerRadius = 20.dp
+    val circleGap = 5.dp
 
     val buttons = bottomTabs
     val isDarkTheme = isSystemInDarkTheme()
@@ -301,12 +305,6 @@ private fun CutoutBottomNavigationBar(
     val barShadowColor = Color.Black.copy(alpha = 0.90f)
     val barTopEdgeColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)
 
-    val screenWidthDp = LocalConfiguration.current.screenWidthDp
-    val labelVisibilityMode = when {
-        screenWidthDp < 360 -> LabelVisibilityMode.Hidden
-        screenWidthDp < 420 -> LabelVisibilityMode.SelectedOnly
-        else -> LabelVisibilityMode.All
-    }
     val selectedIndex = buttons.indexOfFirst { it.route == selectedRoute }.let { index ->
         if (index == -1) 0 else index
     }
@@ -370,7 +368,7 @@ private fun CutoutBottomNavigationBar(
             )
         }
 
-        Row(
+        Column(
             modifier = Modifier
                 .onPlaced { barSize = it.size }
                 .shadow(
@@ -386,93 +384,96 @@ private fun CutoutBottomNavigationBar(
                     compositingStrategy = CompositingStrategy.Offscreen
                 }
                 .fillMaxWidth()
-                .background(barBackgroundColor)
-                .drawWithContent {
-                    drawContent()
-                    if (cutoutOffset > 0f) {
-                        drawCircle(
-                            color = Color.Transparent,
-                            radius = clearRadiusPx,
-                            center = Offset(cutoutOffset, 0f),
-                            blendMode = BlendMode.Clear
-                        )
-                        drawRect(
-                            color = Color.Transparent,
-                            topLeft = Offset(cutoutOffset - clearRadiusPx, 0f),
-                            size = Size(width = clearRadiusPx * 2f, height = 8.dp.toPx()),
-                            blendMode = BlendMode.Clear
-                        )
-
-                        val leftEdgeEnd = (cutoutOffset - clearRadiusPx).coerceAtLeast(0f)
-                        val rightEdgeStart = (cutoutOffset + clearRadiusPx).coerceAtMost(size.width)
-                        val topY = 0f
-                        val stroke = 1.dp.toPx()
-
-                        if (leftEdgeEnd > 0f) {
-                            drawLine(
-                                color = barTopEdgeColor,
-                                start = Offset(0f, topY),
-                                end = Offset(leftEdgeEnd, topY),
-                                strokeWidth = stroke
-                            )
-                        }
-                        if (rightEdgeStart < size.width) {
-                            drawLine(
-                                color = barTopEdgeColor,
-                                start = Offset(rightEdgeStart, topY),
-                                end = Offset(size.width, topY),
-                                strokeWidth = stroke
-                            )
-                        }
-                    }
-                },
-            horizontalArrangement = Arrangement.SpaceAround
         ) {
-            buttons.forEachIndexed { index, tab ->
-                val isSelected = index == selectedIndex
-                NavigationBarItem(
-                    selected = isSelected,
-                    onClick = {
-                        tab.route?.let { route ->
-                            if (route != selectedRoute) {
-                                onNavigate(route)
+            Row(
+                modifier = Modifier
+                    .height(BottomBarBodyHeight)
+                    .fillMaxWidth()
+                    .background(barBackgroundColor)
+                    .drawWithContent {
+                        drawContent()
+                        if (cutoutOffset > 0f) {
+                            drawCircle(
+                                color = Color.Transparent,
+                                radius = clearRadiusPx,
+                                center = Offset(cutoutOffset, 0f),
+                                blendMode = BlendMode.Clear
+                            )
+                            drawRect(
+                                color = Color.Transparent,
+                                topLeft = Offset(cutoutOffset - clearRadiusPx, 0f),
+                                size = Size(width = clearRadiusPx * 2f, height = 8.dp.toPx()),
+                                blendMode = BlendMode.Clear
+                            )
+
+                            val leftEdgeEnd = (cutoutOffset - clearRadiusPx).coerceAtLeast(0f)
+                            val rightEdgeStart = (cutoutOffset + clearRadiusPx).coerceAtMost(size.width)
+                            val topY = 0f
+                            val stroke = 1.dp.toPx()
+
+                            if (leftEdgeEnd > 0f) {
+                                drawLine(
+                                    color = barTopEdgeColor,
+                                    start = Offset(0f, topY),
+                                    end = Offset(leftEdgeEnd, topY),
+                                    strokeWidth = stroke
+                                )
                             }
-                        }
-                    },
-                    icon = {
-                        val iconAlpha by animateFloatAsState(
-                            targetValue = if (isSelected) 0f else 1f,
-                            label = "bottom-bar-icon-alpha"
-                        )
-                        Icon(
-                            imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
-                            contentDescription = tab.label,
-                            modifier = Modifier.alpha(iconAlpha)
-                        )
-                    },
-                    label = when (labelVisibilityMode) {
-                        LabelVisibilityMode.Hidden -> null
-                        LabelVisibilityMode.SelectedOnly,
-                        LabelVisibilityMode.All -> {
-                            {
-                                Text(
-                                    text = tab.label,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                            if (rightEdgeStart < size.width) {
+                                drawLine(
+                                    color = barTopEdgeColor,
+                                    start = Offset(rightEdgeStart, topY),
+                                    end = Offset(size.width, topY),
+                                    strokeWidth = stroke
                                 )
                             }
                         }
                     },
-                    alwaysShowLabel = labelVisibilityMode == LabelVisibilityMode.All,
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        indicatorColor = Color.Transparent
-                    )
-                )
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                buttons.forEachIndexed { index, tab ->
+                    val isSelected = index == selectedIndex
+                    CompositionLocalProvider(LocalRippleConfiguration provides null) {
+                        NavigationBarItem(
+                            selected = isSelected,
+                            onClick = {
+                                tab.route?.let { route ->
+                                    if (route != selectedRoute) {
+                                        onNavigate(route)
+                                    }
+                                }
+                            },
+                            icon = {
+                                val iconAlpha by animateFloatAsState(
+                                    targetValue = if (isSelected) 0f else 1f,
+                                    label = "bottom-bar-icon-alpha"
+                                )
+                                Icon(
+                                    imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
+                                    contentDescription = tab.label,
+                                    modifier = Modifier.alpha(iconAlpha)
+                                )
+                            },
+                            label = null,
+                            alwaysShowLabel = false,
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                indicatorColor = Color.Transparent
+                            )
+                        )
+                    }
+                }
             }
+
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                    .background(barBackgroundColor)
+            )
         }
     }
 }

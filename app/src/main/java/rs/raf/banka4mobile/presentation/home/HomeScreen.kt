@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -54,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.components.AccountSwitcherHeader
+import rs.raf.banka4mobile.presentation.components.BottomBarScrollSpacer
 import java.util.Locale
 import rs.raf.banka4mobile.ui.theme.SuccessGreen
 import rs.raf.banka4mobile.ui.theme.ErrorRed
@@ -163,7 +166,7 @@ private fun HomeScreenContent(
                         onCardsClick = onCardsClick,
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     if (state.transactions.isEmpty()) {
                         Box(
@@ -180,12 +183,11 @@ private fun HomeScreenContent(
                             )
                         }
                     } else {
-                        val extraBottomScrollSpace = 100.dp
                         val transactionsPreview = state.transactions.take(4)
 
                         LazyColumn(
                             modifier = Modifier.weight(1f),
-                            contentPadding = PaddingValues(bottom = 12.dp, start = 16.dp, end = 16.dp),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
                             items(items = transactionsPreview, key = { it.id }) { transaction ->
@@ -197,7 +199,7 @@ private fun HomeScreenContent(
                             }
 
                             item {
-                                Spacer(modifier = Modifier.height(extraBottomScrollSpace))
+                                BottomBarScrollSpacer()
                             }
                         }
                     }
@@ -392,7 +394,11 @@ private fun OpenAllTransactionsCard(onClick: () -> Unit) {
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
     ) {
         Box(
             modifier = Modifier
@@ -426,7 +432,7 @@ private fun BalanceCircle(
 
     Box(
         modifier = modifier
-            .size(350.dp)
+            .size(300.dp)
             .drawBehind {
                 drawCircle(
                     brush = Brush.radialGradient(

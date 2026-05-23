@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.components.AccountSwitcherHeader
+import rs.raf.banka4mobile.presentation.components.BottomBarScrollSpacer
 import rs.raf.banka4mobile.presentation.transfers.TransferContract.UiEvent
 import rs.raf.banka4mobile.ui.theme.ErrorRed
 import rs.raf.banka4mobile.ui.theme.SuccessGreen
@@ -113,7 +114,7 @@ private fun TransferContent(
             modifier = Modifier
                 .fillMaxSize()
                 .imePadding(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
@@ -150,6 +151,10 @@ private fun TransferContent(
                 items(items = state.transfers, key = { it.id }) { transfer ->
                     TransferHistoryCard(transfer = transfer)
                 }
+            }
+
+            item {
+                BottomBarScrollSpacer()
             }
         }
     }

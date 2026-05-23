@@ -5,8 +5,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import rs.raf.banka4mobile.data.local.settings.AppThemeOption
@@ -32,8 +34,16 @@ class MainActivity : ComponentActivity() {
             ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
 
-        enableEdgeToEdge()
-
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                "#00000000".toColorInt(),
+                "#00000000".toColorInt()
+            ),
+            navigationBarStyle = SystemBarStyle.auto(
+                "#FFFFFFFF".toColorInt(),
+                "#FF000000".toColorInt()
+            )
+        )
         setContent {
             val selectedTheme = themePreferenceManager.selectedTheme
                 .collectAsStateWithLifecycle(initialValue = AppThemeOption.SYSTEM)
@@ -54,4 +64,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }

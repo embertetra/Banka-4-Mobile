@@ -61,36 +61,25 @@ fun ProfileScreen(
     onLogoutSuccess: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.onEvent(
-            ProfileContract.UiEvent.ScreenOpened
-        )
+        viewModel.onEvent(ProfileContract.UiEvent.ScreenOpened)
     }
 
     LaunchedEffect(Unit) {
         viewModel.sideEffects.collect { sideEffect ->
-
             when (sideEffect) {
-
-                ProfileContract.SideEffect.NavigateToLogin -> {
-                    onLogoutSuccess()
-                }
+                ProfileContract.SideEffect.NavigateToLogin -> onLogoutSuccess()
             }
         }
     }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-
         topBar = {
-
             TopAppBar(
-
                 title = {
-
                     Text(
                         text = "Profil",
                         color = MaterialTheme.colorScheme.primary,
@@ -98,43 +87,32 @@ fun ProfileScreen(
                         style = MaterialTheme.typography.headlineLarge
                     )
                 },
-
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
                 )
             )
         }
     ) { paddingValues ->
-
         when {
-
             state.isLoading && state.profile == null -> {
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues),
-
                     contentAlignment = Alignment.Center
                 ) {
-
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 }
             }
 
             state.errorMessage != null && state.profile == null -> {
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
                         .padding(24.dp),
-
                     contentAlignment = Alignment.Center
                 ) {
-
                     Text(
                         text = state.errorMessage ?: "Greška",
                         color = MaterialTheme.colorScheme.error
@@ -143,7 +121,6 @@ fun ProfileScreen(
             }
 
             else -> {
-
                 val profile = state.profile
 
                 Column(
@@ -152,7 +129,6 @@ fun ProfileScreen(
                         .padding(paddingValues)
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
 
