@@ -90,6 +90,18 @@ class AuthRepositoryImpl @Inject constructor(
         return sessionManager.getSession()
     }
 
+    override suspend fun getQuickLoginSession(): Session? {
+        return sessionManager.getQuickLoginSession()
+    }
+
+    override suspend fun saveLastLoginEmail(email: String) {
+        sessionManager.saveLastLoginEmail(email)
+    }
+
+    override suspend fun getLastLoginEmail(): String? {
+        return sessionManager.getLastLoginEmail()
+    }
+
     override suspend fun getSecretMobile(): Result<String> {
         val token = sessionManager.getSession()?.token
             ?: return Result.failure(Exception("Nema aktivne sesije."))

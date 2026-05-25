@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.data.local.settings.AppThemeOption
+import rs.raf.banka4mobile.presentation.components.BottomBarScrollSpacer
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -173,9 +174,7 @@ fun ProfileScreen(
                         )
                     }
 
-                    Spacer(
-                        modifier = Modifier.height(24.dp)
-                    )
+                    BottomBarScrollSpacer()
                 }
             }
         }

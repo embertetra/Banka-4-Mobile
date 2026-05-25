@@ -2,7 +2,6 @@ package rs.raf.banka4mobile
 
 import android.content.pm.ActivityInfo
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
@@ -10,6 +9,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
 import rs.raf.banka4mobile.data.local.settings.AppThemeOption
 import rs.raf.banka4mobile.data.local.settings.ThemePreferenceManager
@@ -18,7 +18,7 @@ import rs.raf.banka4mobile.ui.theme.Banka4MobileTheme
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var themePreferenceManager: ThemePreferenceManager
