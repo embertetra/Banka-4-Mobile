@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.SideEffect
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -23,6 +24,21 @@ class MainActivity : FragmentActivity() {
     @Inject
     lateinit var themePreferenceManager: ThemePreferenceManager
 
+    private fun applySystemBarStyle(useDarkTheme: Boolean) {
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.auto(
+                "#00000000".toColorInt(),
+                "#00000000".toColorInt(),
+                detectDarkMode = { _ -> useDarkTheme }
+            ),
+            navigationBarStyle = SystemBarStyle.auto(
+                "#FFFFFFFF".toColorInt(),
+                "#FF000000".toColorInt(),
+                detectDarkMode = { _ -> useDarkTheme }
+            )
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -34,16 +50,7 @@ class MainActivity : FragmentActivity() {
             ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
 
-        enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(
-                "#00000000".toColorInt(),
-                "#00000000".toColorInt()
-            ),
-            navigationBarStyle = SystemBarStyle.auto(
-                "#FFFFFFFF".toColorInt(),
-                "#FF000000".toColorInt()
-            )
-        )
+        applySystemBarStyle(useDarkTheme = false)
         setContent {
             val selectedTheme = themePreferenceManager.selectedTheme
                 .collectAsStateWithLifecycle(initialValue = AppThemeOption.SYSTEM)
@@ -55,6 +62,10 @@ class MainActivity : FragmentActivity() {
                 AppThemeOption.SYSTEM -> isSystemDark
                 AppThemeOption.LIGHT -> false
                 AppThemeOption.DARK -> true
+            }
+
+            SideEffect {
+                applySystemBarStyle(useDarkTheme)
             }
 
             Banka4MobileTheme(
