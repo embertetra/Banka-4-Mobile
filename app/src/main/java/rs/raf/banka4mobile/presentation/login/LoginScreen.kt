@@ -55,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -187,14 +188,25 @@ fun LoginScreen(
                 verticalArrangement = if (isKeyboardOpen) Arrangement.Bottom else Arrangement.Center
             ) {
                 Text(
-                    text = "Dobrodošao nazad!",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
+                    text = "Banka 4",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(if (isKeyboardOpen) 20.dp else 50.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "prijavite se na svoj nalog",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(if (isKeyboardOpen) 20.dp else 30.dp))
 
                 TextField(
                     value = uiState.email,
@@ -292,7 +304,9 @@ fun LoginScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     HorizontalDivider(
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .align(Alignment.CenterVertically),
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
                 }
