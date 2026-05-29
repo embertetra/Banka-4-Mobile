@@ -2,6 +2,7 @@ package rs.raf.banka4mobile
 
 import android.content.pm.ActivityInfo
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.SystemBarStyle
@@ -42,6 +43,9 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+
+        // Protect app content from screenshots and screen recordings.
+        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
 
         val isPhone = resources.configuration.smallestScreenWidthDp < 600
         requestedOrientation = if (isPhone) {
