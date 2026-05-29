@@ -1,21 +1,28 @@
 package rs.raf.banka4mobile.presentation.profile
 
 import android.graphics.Paint
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +31,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -40,21 +48,24 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.data.local.settings.AppThemeOption
 import rs.raf.banka4mobile.presentation.components.BottomBarScrollSpacer
 import java.util.Locale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,34 +155,54 @@ fun ProfileScreen(
                         }
                     )
 
-                    MonthlyBalanceChartCard(
-                        items = state.monthlyBalance
-                    )
+//                    MonthlyBalanceChartCard(
+//                        items = state.monthlyBalance
+//                    )
 
                     DailySpendingChartCard(
                         items = state.dailySpending
                     )
 
-                    Button(
-                        onClick = {
-                            viewModel.onEvent(
-                                ProfileContract.UiEvent.LogoutClicked
-                            )
-                        },
-
-                        modifier = Modifier.fillMaxWidth(),
-
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.error
-                        ),
-
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-
-                        Text(
-                            text = "Odjavi se",
-                            fontWeight = FontWeight.Bold
+                    val logoutGradient = Brush.horizontalGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.error,
+                            MaterialTheme.colorScheme.error.copy(alpha = 0.82f)
                         )
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(top = 8.dp)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(logoutGradient)
+                    ) {
+                        Button(
+                            onClick = {
+                                viewModel.onEvent(
+                                    ProfileContract.UiEvent.LogoutClicked
+                                )
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            ),
+                            contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Text(
+                                text = "Odjavi se",
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = 1.25.sp
+                            )
+
+                            Spacer(modifier = Modifier.size(8.dp))
+
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Logout,
+                                contentDescription = "Odjavi se"
+                            )
+                        }
                     }
 
                     BottomBarScrollSpacer()
@@ -181,116 +212,129 @@ fun ProfileScreen(
     }
 }
 
+private data class ThemeOption(
+    val option: AppThemeOption,
+    val label: String,
+    val icon: ImageVector
+)
+
 @Composable
 private fun ThemeSelectorCard(
     selectedTheme: AppThemeOption,
     onThemeSelected: (AppThemeOption) -> Unit
 ) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        border = BorderStroke(
-            1.dp,
-            MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    val options = listOf(
+        ThemeOption(AppThemeOption.LIGHT, "Svetla", Icons.Default.LightMode),
+        ThemeOption(AppThemeOption.SYSTEM, "Sistem", Icons.Default.Settings),
+        ThemeOption(AppThemeOption.DARK, "Tamna", Icons.Default.DarkMode)
+    )
+
+    val selectedIndex = options
+        .indexOfFirst { it.option == selectedTheme }
+        .coerceAtLeast(0)
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
-            modifier = Modifier.padding(20.dp)
+        Text(
+            text = "Tema aplikacije",
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.ExtraBold,
+            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
+        )
+
+        val trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f)
+        val indicatorColor = MaterialTheme.colorScheme.primary
+
+        val animatedPosition by animateFloatAsState(
+            targetValue = selectedIndex.toFloat(),
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessMediumLow
+            ),
+            label = "themeIndicatorPosition"
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .background(trackColor)
+                .border(
+                    width = 1.dp,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                    shape = RoundedCornerShape(20.dp)
+                )
+                .padding(6.dp)
         ) {
-            Text(
-                text = "Tema aplikacije",
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.ExtraBold
-            )
+            val startWeight = animatedPosition
+            val endWeight = (options.size - 1) - animatedPosition
 
-            Spacer(modifier = Modifier.height(22.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                ThemeIconOption(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.LightMode,
-                    selected = selectedTheme == AppThemeOption.LIGHT,
-                    iconColor = Color(0xFFFFB300),
-                    onClick = {
-                        onThemeSelected(AppThemeOption.LIGHT)
-                    }
+            // Sliding pill indicator positioned with animated weights
+            Row(modifier = Modifier.fillMaxSize()) {
+                if (startWeight > 0f) {
+                    Spacer(modifier = Modifier.weight(startWeight))
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(indicatorColor)
                 )
+                if (endWeight > 0f) {
+                    Spacer(modifier = Modifier.weight(endWeight))
+                }
+            }
 
-                ThemeIconOption(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Settings,
-                    selected = selectedTheme == AppThemeOption.SYSTEM,
-                    iconColor = MaterialTheme.colorScheme.primary,
-                    onClick = {
-                        onThemeSelected(AppThemeOption.SYSTEM)
-                    }
-                )
+            Row(modifier = Modifier.fillMaxSize()) {
+                options.forEach { themeOption ->
+                    val isSelected = themeOption.option == selectedTheme
 
-                ThemeIconOption(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.DarkMode,
-                    selected = selectedTheme == AppThemeOption.DARK,
-                    iconColor = Color(0xFF1F2A55),
-                    onClick = {
-                        onThemeSelected(AppThemeOption.DARK)
+                    val contentColor by animateColorAsState(
+                        targetValue = if (isSelected) {
+                            MaterialTheme.colorScheme.onPrimary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        animationSpec = tween(durationMillis = 250),
+                        label = "themeContentColor"
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(16.dp))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = { onThemeSelected(themeOption.option) }
+                            ),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = themeOption.icon,
+                            contentDescription = themeOption.label,
+                            tint = contentColor,
+                            modifier = Modifier.size(22.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = themeOption.label,
+                            color = contentColor,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                        )
                     }
-                )
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun ThemeIconOption(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    selected: Boolean,
-    iconColor: Color,
-    onClick: () -> Unit
-) {
-
-    val borderColor = if (selected) {
-        MaterialTheme.colorScheme.primary
-    } else {
-        MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
-    }
-
-    val backgroundColor = if (selected) {
-        MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
-    } else {
-        MaterialTheme.colorScheme.surface
-    }
-
-    Box(
-        modifier = modifier
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(22.dp))
-            .background(backgroundColor)
-            .border(
-                width = if (selected) 2.dp else 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(22.dp)
-            )
-            .clickable(onClick = onClick),
-
-        contentAlignment = Alignment.Center
-    ) {
-
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = iconColor,
-            modifier = Modifier.size(46.dp)
-        )
     }
 }
 
@@ -333,18 +377,6 @@ private fun ProfileInfoCard(
             )
 
             Spacer(
-                modifier = Modifier.height(6.dp)
-            )
-
-            Text(
-                text = "Pregled naloga i osnovnih korisničkih informacija",
-
-                style = MaterialTheme.typography.bodyMedium,
-
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(
                 modifier = Modifier.height(18.dp)
             )
 
@@ -360,15 +392,6 @@ private fun ProfileInfoCard(
             ProfileInfoRow(
                 label = "Korisničko ime",
                 value = profile?.username.orEmpty()
-            )
-
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 10.dp)
-            )
-
-            ProfileInfoRow(
-                label = "Tip korisnika",
-                value = profile?.identityType.orEmpty()
             )
         }
     }
