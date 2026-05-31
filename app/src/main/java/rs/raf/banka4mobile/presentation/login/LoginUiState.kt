@@ -5,7 +5,8 @@ interface LoginContract {
         val email: String = "",
         val password: String = "",
         val isLoading: Boolean = false,
-        val showBiometricLogin: Boolean = false
+        val showBiometricLogin: Boolean = false,
+        val biometricAvailabilityStatus: Int? = null
     )
 
     sealed class LoginUiEvent {

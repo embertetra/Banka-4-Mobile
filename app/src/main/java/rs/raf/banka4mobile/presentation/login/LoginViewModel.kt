@@ -99,33 +99,7 @@ class LoginViewModel @Inject constructor(
 
     fun onBiometricAvailabilityChecked(status: Int) {
         val canUseBiometric = status == BiometricManager.BIOMETRIC_SUCCESS
-        val infoMessage = when (status) {
-            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
-                "Biometrija nije podešena na telefonu."
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
-                "Uređaj ne podržava biometrijsku prijavu."
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
-                "Biometrijski senzor je trenutno nedostupan."
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED -> {
-                "Potrebno je bezbednosno ažuriranje uređaja za biometriju."
-            }
-
-            BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> {
-                "Ovaj tip biometrijske prijave nije podržan na uređaju."
-            }
-
-            BiometricManager.BIOMETRIC_STATUS_UNKNOWN -> {
-                "Nije moguće proveriti biometriju trenutno."
-            }
-
-            else -> null
-        }
+        val infoMessage = biometricAvailabilityMessage(status)
 
         if (canUseBiometric) {
             Timber.tag(LOG_TAG).i("Biometrija je dostupna za brzu prijavu.")
@@ -137,17 +111,23 @@ class LoginViewModel @Inject constructor(
 
         _uiState.update {
             it.copy(
-                showBiometricLogin = canUseBiometric
+                showBiometricLogin = canUseBiometric,
+                biometricAvailabilityStatus = status
             )
         }
-
-        infoMessage?.let { emitEffect(LoginUiEvent.ShowMessage(it)) }
     }
 
     fun onBiometricLoginClick() {
-        if (!_uiState.value.showBiometricLogin) {
-            Timber.tag(LOG_TAG).w("Klik na biometrijsku prijavu, ali biometrija nije dostupna.")
-            emitEffect(LoginUiEvent.ShowMessage("Biometrija nije dostupna na ovom uređaju."))
+        val state = _uiState.value
+        if (!state.showBiometricLogin) {
+            val status = state.biometricAvailabilityStatus
+            val message = biometricAvailabilityMessage(status)
+                ?: "Biometrija nije dostupna na ovom uređaju."
+
+            Timber.tag(LOG_TAG).w(
+                "Klik na biometrijsku prijavu, ali biometrija nije dostupna. status=${status ?: "nepoznat"}"
+            )
+            emitEffect(LoginUiEvent.ShowMessage(message))
             return
         }
 
@@ -193,6 +173,36 @@ class LoginViewModel @Inject constructor(
     private fun emitEffect(effect: LoginUiEvent) {
         viewModelScope.launch {
             _effects.send(effect)
+        }
+    }
+
+    private fun biometricAvailabilityMessage(status: Int?): String? {
+        return when (status) {
+            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
+                "Biometrija nije podešena na telefonu."
+            }
+
+            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
+                "Uredjaj ne podržava biometrijsku prijavu."
+            }
+
+            BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
+                "Biometrijski senzor je trenutno nedostupan."
+            }
+
+            BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED -> {
+                "Potrebno je bezbednosno ažuriranje uredjaja za biometriju."
+            }
+
+            BiometricManager.BIOMETRIC_ERROR_UNSUPPORTED -> {
+                "Ovaj tip biometrijske prijave nije podržan na uredjaju."
+            }
+
+            BiometricManager.BIOMETRIC_STATUS_UNKNOWN -> {
+                "Nije moguce proveriti biometriju trenutno."
+            }
+
+            else -> null
         }
     }
 }

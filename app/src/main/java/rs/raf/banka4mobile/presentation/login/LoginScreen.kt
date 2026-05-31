@@ -62,7 +62,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.PlatformImeOptions
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -328,7 +327,7 @@ fun LoginScreen(
                 Box(modifier = Modifier.fillMaxWidth()) {
                     IconButton(
                         onClick = viewModel::onBiometricLoginClick,
-                        enabled = uiState.showBiometricLogin && !uiState.isLoading,
+                        enabled = !uiState.isLoading,
                         modifier = Modifier
                             .size(64.dp)
                             .shadow(2.dp, CircleShape)
