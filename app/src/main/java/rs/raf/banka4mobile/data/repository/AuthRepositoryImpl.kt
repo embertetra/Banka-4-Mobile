@@ -2,10 +2,12 @@ package rs.raf.banka4mobile.data.repository
 
 import kotlinx.serialization.json.Json
 import retrofit2.HttpException
+import rs.raf.banka4mobile.data.auth.AuthSessionCoordinator
 import rs.raf.banka4mobile.data.local.session.SessionManager
 import rs.raf.banka4mobile.data.remote.api.AuthApi
 import rs.raf.banka4mobile.data.remote.dto.ApiErrorDto
 import rs.raf.banka4mobile.data.remote.dto.LoginRequestDto
+import rs.raf.banka4mobile.data.remote.dto.RefreshTokenRequestDto
 import rs.raf.banka4mobile.data.remote.dto.toDomain
 import rs.raf.banka4mobile.domain.model.Session
 import rs.raf.banka4mobile.domain.model.User
@@ -16,7 +18,8 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
     private val sessionManager: SessionManager,
-    private val json: Json
+    private val json: Json,
+    private val authSessionCoordinator: AuthSessionCoordinator
 ) : AuthRepository {
 
     companion object {
@@ -82,6 +85,30 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun refreshSession(refreshToken: String): Result<Session> {
+        if (refreshToken.isBlank()) {
+            return Result.failure(Exception("Nedostaje refresh token. Prijavite se email-om i lozinkom."))
+        }
+
+        if (ENABLE_MOCK_LOGIN) {
+            return Result.success(MOCK_SESSION)
+        }
+
+        return try {
+            val response = authApi.refresh(
+                RefreshTokenRequestDto(refreshToken = refreshToken)
+            )
+            Result.success(response.toDomain())
+        } catch (e: HttpException) {
+            val errorMessage = parseApiErrorMessage(e)
+            Result.failure(Exception(errorMessage))
+        } catch (_: IOException) {
+            Result.failure(Exception("Greška u konekciji sa serverom."))
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "Došlo je do neočekivane greške."))
+        }
+    }
+
     override suspend fun saveSession(session: Session) {
         sessionManager.saveSession(session)
     }
@@ -114,6 +141,9 @@ class AuthRepositoryImpl @Inject constructor(
             val response = authApi.getSecretMobile(authorization = "Bearer $token")
             Result.success(response.secret)
         } catch (e: HttpException) {
+            if (e.code() == 401) {
+                authSessionCoordinator.handleUnauthorized()
+            }
             val errorMessage = parseApiErrorMessage(e)
             Result.failure(Exception(errorMessage))
         } catch (e: IOException) {

@@ -13,6 +13,7 @@ import androidx.core.graphics.toColorInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
+import rs.raf.banka4mobile.data.auth.AuthSessionCoordinator
 import rs.raf.banka4mobile.data.local.settings.AppThemeOption
 import rs.raf.banka4mobile.data.local.settings.ThemePreferenceManager
 import rs.raf.banka4mobile.navigation.AppNavigation
@@ -24,6 +25,9 @@ class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var themePreferenceManager: ThemePreferenceManager
+
+    @Inject
+    lateinit var authSessionCoordinator: AuthSessionCoordinator
 
     private fun applySystemBarStyle(useDarkTheme: Boolean) {
         enableEdgeToEdge(
@@ -75,7 +79,7 @@ class MainActivity : FragmentActivity() {
             Banka4MobileTheme(
                 darkTheme = useDarkTheme
             ) {
-                AppNavigation()
+                AppNavigation(authSessionCoordinator = authSessionCoordinator)
             }
         }
     }

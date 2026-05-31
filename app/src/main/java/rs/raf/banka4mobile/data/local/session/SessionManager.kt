@@ -167,18 +167,18 @@ class SessionManager @Inject constructor(
         )
     }
 
-    suspend fun clearSession() {
+    suspend fun clearSession(keepQuickLoginData: Boolean = true) {
         context.dataStore.edit { preferences ->
             val lastLoginEmail = preferences[Keys.LAST_LOGIN_EMAIL]
-            val quickToken = preferences[Keys.QUICK_TOKEN]
-            val quickRefreshToken = preferences[Keys.QUICK_REFRESH_TOKEN]
-            val quickUserId = preferences[Keys.QUICK_USER_ID]
-            val quickEmail = preferences[Keys.QUICK_EMAIL]
-            val quickFirstName = preferences[Keys.QUICK_FIRST_NAME]
-            val quickLastName = preferences[Keys.QUICK_LAST_NAME]
-            val quickUsername = preferences[Keys.QUICK_USERNAME]
-            val quickIdentityType = preferences[Keys.QUICK_IDENTITY_TYPE]
-            val quickPermissions = preferences[Keys.QUICK_PERMISSIONS]
+            val quickToken = if (keepQuickLoginData) preferences[Keys.QUICK_TOKEN] else null
+            val quickRefreshToken = if (keepQuickLoginData) preferences[Keys.QUICK_REFRESH_TOKEN] else null
+            val quickUserId = if (keepQuickLoginData) preferences[Keys.QUICK_USER_ID] else null
+            val quickEmail = if (keepQuickLoginData) preferences[Keys.QUICK_EMAIL] else null
+            val quickFirstName = if (keepQuickLoginData) preferences[Keys.QUICK_FIRST_NAME] else null
+            val quickLastName = if (keepQuickLoginData) preferences[Keys.QUICK_LAST_NAME] else null
+            val quickUsername = if (keepQuickLoginData) preferences[Keys.QUICK_USERNAME] else null
+            val quickIdentityType = if (keepQuickLoginData) preferences[Keys.QUICK_IDENTITY_TYPE] else null
+            val quickPermissions = if (keepQuickLoginData) preferences[Keys.QUICK_PERMISSIONS] else null
 
             preferences.clear()
 

@@ -142,13 +142,25 @@ class LoginViewModel @Inject constructor(
 
             val quickSession = authRepository.getQuickLoginSession()
             if (quickSession != null) {
-                authRepository.saveSession(quickSession)
-                _uiState.update {
-                    it.copy(
-                        isLoading = false
-                    )
-                }
-                emitEffect(LoginUiEvent.NavigateToHome)
+                authRepository.refreshSession(quickSession.refreshToken)
+                    .onSuccess { refreshedSession ->
+                        authRepository.saveSession(refreshedSession)
+                        _uiState.update {
+                            it.copy(isLoading = false)
+                        }
+                        emitEffect(LoginUiEvent.NavigateToHome)
+                    }
+                    .onFailure { error ->
+                        _uiState.update {
+                            it.copy(isLoading = false)
+                        }
+                        emitEffect(
+                            LoginUiEvent.ShowMessage(
+                                error.message
+                                    ?: "Brza prijava nije uspela. Prijavite se email-om i lozinkom."
+                            )
+                        )
+                    }
             } else {
                 _uiState.update {
                     it.copy(isLoading = false)

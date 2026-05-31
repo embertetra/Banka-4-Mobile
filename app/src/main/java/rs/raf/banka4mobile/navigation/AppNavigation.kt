@@ -46,6 +46,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,6 +82,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import kotlinx.coroutines.flow.collectLatest
+import rs.raf.banka4mobile.data.auth.AuthSessionCoordinator
+import rs.raf.banka4mobile.data.auth.AuthSessionEvent
 import rs.raf.banka4mobile.presentation.cards.CardsScreen
 import rs.raf.banka4mobile.presentation.exchange.ExchangeScreen
 import rs.raf.banka4mobile.presentation.home.HomeScreen
@@ -147,11 +151,27 @@ private val routesWithBottomBar = setOf(
 )
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    authSessionCoordinator: AuthSessionCoordinator
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val selectedRoute = resolveBottomBarRoute(currentRoute)
+
+    LaunchedEffect(authSessionCoordinator, navController) {
+        authSessionCoordinator.events.collectLatest { event ->
+            if (event is AuthSessionEvent.SessionExpired) {
+                val isAlreadyOnLogin = navController.currentDestination?.route == Screen.Login.route
+                if (!isAlreadyOnLogin) {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {
