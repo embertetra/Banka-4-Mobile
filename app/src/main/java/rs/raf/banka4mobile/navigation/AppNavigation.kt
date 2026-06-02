@@ -91,6 +91,7 @@ import rs.raf.banka4mobile.presentation.home.HomeScreen
 import rs.raf.banka4mobile.presentation.loan.LoanScreen
 import rs.raf.banka4mobile.presentation.login.LoginScreen
 import rs.raf.banka4mobile.presentation.components.BottomBarBodyHeight
+import rs.raf.banka4mobile.presentation.orders.OrdersScreen
 import rs.raf.banka4mobile.presentation.profile.ProfileScreen
 import rs.raf.banka4mobile.presentation.transactionsoverview.TransactionsOverviewScreen
 import rs.raf.banka4mobile.presentation.transfers.TransferScreen
@@ -141,6 +142,7 @@ private val routesWithBottomBar = setOf(
     Screen.Home.route,
     Screen.Cards.route,
     Screen.Cards.routeWithArg,
+    Screen.Orders.route,
     Screen.Loans.route,
     Screen.TransactionsOverview.route,
     Screen.TransactionsOverview.routeWithArg,
@@ -182,6 +184,7 @@ fun AppNavigation(
                         val isOnChildScreen =
                             currentRoute?.startsWith(Screen.Cards.route) == true ||
                                     currentRoute == Screen.Loans.route ||
+                                    currentRoute == Screen.Orders.route ||
                                     currentRoute?.startsWith(Screen.TransactionsOverview.route) == true
 
                         if (isOnChildScreen && route == Screen.Home.route) {
@@ -226,6 +229,9 @@ fun AppNavigation(
 
             composable(Screen.Home.route) {
                 HomeScreen(
+                    onOpenOrders = {
+                        navController.navigate(Screen.Orders.route)
+                    },
                     onOpenCards = { accountNumber ->
                         navController.navigate(Screen.Cards.createRoute(accountNumber))
                     },
@@ -236,6 +242,12 @@ fun AppNavigation(
                         navController.navigate(Screen.TransactionsOverview.createRoute(accountNumber))
                     }
                 )
+            }
+
+            composable(Screen.Orders.route) {
+                 OrdersScreen(
+                     onBack = { navController.popBackStack() }
+                 )
             }
 
             composable(Screen.Loans.route) {
@@ -310,6 +322,7 @@ private fun resolveBottomBarRoute(currentRoute: String?): String? {
     return when {
         currentRoute?.startsWith(Screen.Cards.route) == true -> Screen.Home.route
         currentRoute == Screen.Loans.route -> Screen.Home.route
+        currentRoute == Screen.Orders.route -> Screen.Home.route
         currentRoute?.startsWith(Screen.TransactionsOverview.route) == true -> Screen.Home.route
         else -> currentRoute
     }

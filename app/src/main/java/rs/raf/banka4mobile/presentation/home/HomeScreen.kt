@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Info
@@ -63,6 +64,7 @@ import rs.raf.banka4mobile.ui.theme.ErrorRed
 
 @Composable
 fun HomeScreen(
+    onOpenOrders: () -> Unit,
     onOpenCards: (String) -> Unit,
     onOpenLoans: () -> Unit,
     onOpenTransactions: (String) -> Unit,
@@ -78,11 +80,13 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.sideEffects.collect { sideEffect: HomeContract.SideEffect ->
             when (sideEffect) {
+                is HomeContract.SideEffect.NavigateToOrders -> onOpenOrders()
                 is HomeContract.SideEffect.NavigateToCards -> onOpenCards(sideEffect.accountNumber)
                 HomeContract.SideEffect.NavigateToLoans -> onOpenLoans()
                 is HomeContract.SideEffect.NavigateToTransactions -> {
                     onOpenTransactions(sideEffect.accountNumber)
                 }
+
                 is HomeContract.SideEffect.ShowToast -> {
                     Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
                 }
@@ -94,6 +98,7 @@ fun HomeScreen(
         state = state,
         onPrevious = { viewModel.onEvent(HomeContract.UiEvent.PreviousAccountClicked) },
         onNext = { viewModel.onEvent(HomeContract.UiEvent.NextAccountClicked) },
+        onOrdersClick = { viewModel.onEvent(HomeContract.UiEvent.OpenOrdersClicked) },
         onCreditInstallmentClick = { viewModel.onEvent(HomeContract.UiEvent.OpenLoansClicked) },
         onCardsClick = { viewModel.onEvent(HomeContract.UiEvent.OpenCardsClicked) },
         onOpenAllTransactions = { viewModel.onEvent(HomeContract.UiEvent.OpenTransactionsClicked) },
@@ -107,6 +112,7 @@ private fun HomeScreenContent(
     state: HomeContract.UiState,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
+    onOrdersClick: () -> Unit,
     onCreditInstallmentClick: () -> Unit,
     onCardsClick: () -> Unit,
     onOpenAllTransactions: () -> Unit,
@@ -161,9 +167,11 @@ private fun HomeScreenContent(
                     )
 
                     ActionRow(
+                        onOrdersClick = onOrdersClick,
                         onCreditInstallmentClick = onCreditInstallmentClick,
                         onInfoClick = onInfoClick,
                         onCardsClick = onCardsClick,
+                        showOrders = state.canTrade
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -225,16 +233,31 @@ private fun HomeScreenContent(
 
 @Composable
 private fun ActionRow(
+    onOrdersClick: () -> Unit,
     onCreditInstallmentClick: () -> Unit,
     onInfoClick: () -> Unit,
     onCardsClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showOrders: Boolean = false
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (showOrders)
+            ActionIconItem(
+                label = "Orderi",
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Analytics,
+                        contentDescription = "Moji orderi",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                onClick = onOrdersClick
+            )
+
         ActionIconItem(
             label = "Rata",
             icon = {

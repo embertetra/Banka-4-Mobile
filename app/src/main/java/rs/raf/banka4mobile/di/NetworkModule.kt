@@ -13,6 +13,7 @@ import retrofit2.Retrofit
 import rs.raf.banka4mobile.data.remote.api.AuthApi
 import rs.raf.banka4mobile.data.remote.api.BankingApi
 import rs.raf.banka4mobile.data.remote.api.ExchangeApi
+import rs.raf.banka4mobile.data.remote.api.OrdersApi
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -23,6 +24,7 @@ object NetworkModule {
     private const val AUTH_BASE_URL = "http://rafsi.davidovic.io:8080/api/"
     private const val BANKING_BASE_URL = "http://rafsi.davidovic.io:8081/api/"
     private const val EXCHANGE_BASE_URL = "http://rafsi.davidovic.io:8081/"
+    private const val ORDERS_BASE_URL = "http://rafsi.davidovic.io:8082/api/"
 
     @Provides
     @Singleton
@@ -101,6 +103,22 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @Named("orders")
+    fun provideOrdersRetrofit(
+        okHttpClient: OkHttpClient,
+        json: Json
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(ORDERS_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(
+                json.asConverterFactory("application/json".toMediaType())
+            )
+            .build()
+    }
+
+    @Provides
+    @Singleton
     fun provideAuthApi(
         @Named("auth") retrofit: Retrofit
     ): AuthApi {
@@ -121,5 +139,13 @@ object NetworkModule {
         @Named("exchange") retrofit: Retrofit
     ): ExchangeApi {
         return retrofit.create(ExchangeApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideOrdersApi(
+        @Named("orders") retrofit: Retrofit
+    ): OrdersApi {
+        return retrofit.create(OrdersApi::class.java)
     }
 }
