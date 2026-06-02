@@ -11,11 +11,18 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
@@ -30,12 +37,16 @@ import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.VerifiedUser
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -71,14 +82,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import kotlinx.coroutines.flow.collectLatest
+import rs.raf.banka4mobile.data.auth.AuthSessionCoordinator
+import rs.raf.banka4mobile.data.auth.AuthSessionEvent
 import rs.raf.banka4mobile.presentation.cards.CardsScreen
 import rs.raf.banka4mobile.presentation.exchange.ExchangeScreen
 import rs.raf.banka4mobile.presentation.home.HomeScreen
 import rs.raf.banka4mobile.presentation.loan.LoanScreen
 import rs.raf.banka4mobile.presentation.login.LoginScreen
+import rs.raf.banka4mobile.presentation.components.BottomBarBodyHeight
+import rs.raf.banka4mobile.presentation.orders.OrdersScreen
 import rs.raf.banka4mobile.presentation.profile.ProfileScreen
+import rs.raf.banka4mobile.presentation.transactionsoverview.TransactionsOverviewScreen
 import rs.raf.banka4mobile.presentation.transfers.TransferScreen
 import rs.raf.banka4mobile.presentation.verification.VerificationScreen
+import rs.raf.banka4mobile.ui.theme.Banka4MobileThemeTokens
 
 private data class BottomTab(
     val label: String,
@@ -124,7 +142,10 @@ private val routesWithBottomBar = setOf(
     Screen.Home.route,
     Screen.Cards.route,
     Screen.Cards.routeWithArg,
+    Screen.Orders.route,
     Screen.Loans.route,
+    Screen.TransactionsOverview.route,
+    Screen.TransactionsOverview.routeWithArg,
     Screen.Transfers.route,
     Screen.Verification.route,
     Screen.Exchange.route,
@@ -132,11 +153,27 @@ private val routesWithBottomBar = setOf(
 )
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    authSessionCoordinator: AuthSessionCoordinator
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
     val selectedRoute = resolveBottomBarRoute(currentRoute)
+
+    LaunchedEffect(authSessionCoordinator, navController) {
+        authSessionCoordinator.events.collectLatest { event ->
+            if (event is AuthSessionEvent.SessionExpired) {
+                val isAlreadyOnLogin = navController.currentDestination?.route == Screen.Login.route
+                if (!isAlreadyOnLogin) {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -146,7 +183,9 @@ fun AppNavigation() {
                     onNavigate = { route ->
                         val isOnChildScreen =
                             currentRoute?.startsWith(Screen.Cards.route) == true ||
-                                    currentRoute == Screen.Loans.route
+                                    currentRoute == Screen.Loans.route ||
+                                    currentRoute == Screen.Orders.route ||
+                                    currentRoute?.startsWith(Screen.TransactionsOverview.route) == true
 
                         if (isOnChildScreen && route == Screen.Home.route) {
                             navController.popBackStack(Screen.Home.route, inclusive = false)
@@ -167,11 +206,20 @@ fun AppNavigation() {
         NavHost(
             navController = navController,
             startDestination = Screen.Login.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(top = innerPadding.calculateTopPadding())
+                .consumeWindowInsets(innerPadding)
         ) {
             composable(Screen.Login.route) {
                 LoginScreen(
-                    onLoginSuccess = { navController.navigate(Screen.Home.route) }
+                    onLoginSuccess = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Login.route) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
 
@@ -181,13 +229,25 @@ fun AppNavigation() {
 
             composable(Screen.Home.route) {
                 HomeScreen(
+                    onOpenOrders = {
+                        navController.navigate(Screen.Orders.route)
+                    },
                     onOpenCards = { accountNumber ->
                         navController.navigate(Screen.Cards.createRoute(accountNumber))
                     },
                     onOpenLoans = {
                         navController.navigate(Screen.Loans.route)
+                    },
+                    onOpenTransactions = { accountNumber ->
+                        navController.navigate(Screen.TransactionsOverview.createRoute(accountNumber))
                     }
                 )
+            }
+
+            composable(Screen.Orders.route) {
+                 OrdersScreen(
+                     onBack = { navController.popBackStack() }
+                 )
             }
 
             composable(Screen.Loans.route) {
@@ -219,6 +279,29 @@ fun AppNavigation() {
                 ExchangeScreen()
             }
 
+            composable(
+                route = Screen.TransactionsOverview.routeWithArg,
+                arguments = listOf(
+                    navArgument(Screen.TransactionsOverview.ACCOUNT_NUMBER_ARG) {
+                        type = NavType.StringType
+                        nullable = true
+                        defaultValue = null
+                    }
+                )
+            ) {
+                TransactionsOverviewScreen(
+                    onBack = {
+                        val popped = navController.popBackStack()
+                        if (!popped) {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Home.route) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        }
+                    }
+                )
+            }
+
             composable(Screen.Profile.route) {
                 ProfileScreen(
                     onLogoutSuccess = {
@@ -239,20 +322,29 @@ private fun resolveBottomBarRoute(currentRoute: String?): String? {
     return when {
         currentRoute?.startsWith(Screen.Cards.route) == true -> Screen.Home.route
         currentRoute == Screen.Loans.route -> Screen.Home.route
+        currentRoute == Screen.Orders.route -> Screen.Home.route
+        currentRoute?.startsWith(Screen.TransactionsOverview.route) == true -> Screen.Home.route
         else -> currentRoute
     }
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3Api::class)
 private fun CutoutBottomNavigationBar(
     selectedRoute: String?,
     onNavigate: (String) -> Unit
 ) {
-    val circleRadius = 26.dp
-    val cornerRadius = 24.dp
-    val circleGap = 6.dp
+    val circleRadius = 22.dp
+    val cornerRadius = 20.dp
+    val circleGap = 5.dp
 
     val buttons = bottomTabs
+    val isDarkTheme = isSystemInDarkTheme()
+    val barBackgroundColor = Banka4MobileThemeTokens.colors.bottomBarSurface
+    val barShadowElevation = if (isDarkTheme) 18.dp else 10.dp
+    val barShadowColor = Color.Black.copy(alpha = 0.90f)
+    val barTopEdgeColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.55f)
+
     val selectedIndex = buttons.indexOfFirst { it.route == selectedRoute }.let { index ->
         if (index == -1) 0 else index
     }
@@ -308,7 +400,7 @@ private fun CutoutBottomNavigationBar(
                 modifier = Modifier
                     .offset { circleOffset }
                     .zIndex(1f),
-                color = MaterialTheme.colorScheme.surface,
+                color = barBackgroundColor,
                 radius = circleRadius,
                 icon = selectedTab.selectedIcon,
                 contentDescription = selectedTab.label,
@@ -316,62 +408,112 @@ private fun CutoutBottomNavigationBar(
             )
         }
 
-        Row(
+        Column(
             modifier = Modifier
                 .onPlaced { barSize = it.size }
-                .shadow(6.dp, barShape, clip = false)
+                .shadow(
+                    elevation = barShadowElevation,
+                    shape = barShape,
+                    clip = false,
+                    ambientColor = barShadowColor,
+                    spotColor = barShadowColor
+                )
                 .graphicsLayer {
                     shape = barShape
                     clip = true
                     compositingStrategy = CompositingStrategy.Offscreen
                 }
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface)
-                .drawWithContent {
-                    drawContent()
-                    if (cutoutOffset > 0f) {
-                        drawCircle(
-                            color = Color.Transparent,
-                            radius = clearRadiusPx,
-                            center = Offset(cutoutOffset, 0f),
-                            blendMode = BlendMode.Clear
-                        )
-                    }
-                },
-            horizontalArrangement = Arrangement.SpaceAround
         ) {
-            buttons.forEachIndexed { index, tab ->
-                val isSelected = index == selectedIndex
-                NavigationBarItem(
-                    selected = isSelected,
-                    onClick = {
-                        tab.route?.let { route ->
-                            if (route != selectedRoute) {
-                                onNavigate(route)
+            Row(
+                modifier = Modifier
+                    .height(BottomBarBodyHeight)
+                    .fillMaxWidth()
+                    .background(barBackgroundColor)
+                    .drawWithContent {
+                        drawContent()
+                        if (cutoutOffset > 0f) {
+                            drawCircle(
+                                color = Color.Transparent,
+                                radius = clearRadiusPx,
+                                center = Offset(cutoutOffset, 0f),
+                                blendMode = BlendMode.Clear
+                            )
+                            drawRect(
+                                color = Color.Transparent,
+                                topLeft = Offset(cutoutOffset - clearRadiusPx, 0f),
+                                size = Size(width = clearRadiusPx * 2f, height = 8.dp.toPx()),
+                                blendMode = BlendMode.Clear
+                            )
+
+                            val leftEdgeEnd = (cutoutOffset - clearRadiusPx).coerceAtLeast(0f)
+                            val rightEdgeStart = (cutoutOffset + clearRadiusPx).coerceAtMost(size.width)
+                            val topY = 0f
+                            val stroke = 1.dp.toPx()
+
+                            if (leftEdgeEnd > 0f) {
+                                drawLine(
+                                    color = barTopEdgeColor,
+                                    start = Offset(0f, topY),
+                                    end = Offset(leftEdgeEnd, topY),
+                                    strokeWidth = stroke
+                                )
+                            }
+                            if (rightEdgeStart < size.width) {
+                                drawLine(
+                                    color = barTopEdgeColor,
+                                    start = Offset(rightEdgeStart, topY),
+                                    end = Offset(size.width, topY),
+                                    strokeWidth = stroke
+                                )
                             }
                         }
                     },
-                    icon = {
-                        val iconAlpha by animateFloatAsState(
-                            targetValue = if (isSelected) 0f else 1f,
-                            label = "bottom-bar-icon-alpha"
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                buttons.forEachIndexed { index, tab ->
+                    val isSelected = index == selectedIndex
+                    CompositionLocalProvider(LocalRippleConfiguration provides null) {
+                        NavigationBarItem(
+                            selected = isSelected,
+                            onClick = {
+                                tab.route?.let { route ->
+                                    if (route != selectedRoute) {
+                                        onNavigate(route)
+                                    }
+                                }
+                            },
+                            icon = {
+                                val iconAlpha by animateFloatAsState(
+                                    targetValue = if (isSelected) 0f else 1f,
+                                    label = "bottom-bar-icon-alpha"
+                                )
+                                Icon(
+                                    imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
+                                    contentDescription = tab.label,
+                                    modifier = Modifier.alpha(iconAlpha)
+                                )
+                            },
+                            label = null,
+                            alwaysShowLabel = false,
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                indicatorColor = Color.Transparent
+                            )
                         )
-                        Icon(
-                            imageVector = if (isSelected) tab.selectedIcon else tab.unselectedIcon,
-                            contentDescription = tab.label,
-                            modifier = Modifier.alpha(iconAlpha)
-                        )
-                    },
-                    label = { Text(tab.label) },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = MaterialTheme.colorScheme.primary,
-                        selectedTextColor = MaterialTheme.colorScheme.primary,
-                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                        indicatorColor = Color.Transparent
-                    )
-                )
+                    }
+                }
             }
+
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                    .background(barBackgroundColor)
+            )
         }
     }
 }
@@ -476,11 +618,25 @@ private fun CircleButton(
     contentDescription: String,
     iconColor: Color
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val circleShadowElevation = if (isDarkTheme) 14.dp else 8.dp
+    val circleShadowColor = if (isDarkTheme) {
+        Color.Black.copy(alpha = 0.75f)
+    } else {
+        Color.Black.copy(alpha = 0.28f)
+    }
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .size(radius * 2)
-            .shadow(6.dp, CircleShape, clip = false)
+            .shadow(
+                elevation = circleShadowElevation,
+                shape = CircleShape,
+                clip = false,
+                ambientColor = circleShadowColor,
+                spotColor = circleShadowColor
+            )
             .clip(CircleShape)
             .background(color)
     ) {

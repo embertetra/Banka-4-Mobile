@@ -6,9 +6,17 @@ interface AuthRepository {
 
     suspend fun login(email: String, password: String): Result<Session>
 
+    suspend fun refreshSession(refreshToken: String): Result<Session>
+
     suspend fun saveSession(session: Session)
 
     suspend fun getSession(): Session?
+
+    suspend fun getQuickLoginSession(): Session?
+
+    suspend fun saveLastLoginEmail(email: String)
+
+    suspend fun getLastLoginEmail(): String?
 
     suspend fun getSecretMobile(): Result<String>
 

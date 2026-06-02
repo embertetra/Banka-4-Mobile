@@ -8,6 +8,9 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
@@ -65,6 +68,20 @@ private val LightColorScheme = lightColorScheme(
     onErrorContainer = Color(0xFF410002)
 )
 
+@Immutable
+data class Banka4MobileExtraColors(
+    val bottomBarSurface: Color
+)
+
+private val LocalBanka4MobileExtraColors = staticCompositionLocalOf {
+    Banka4MobileExtraColors(bottomBarSurface = LightBottomBarSurface)
+}
+
+object Banka4MobileThemeTokens {
+    val colors: Banka4MobileExtraColors
+        @Composable get() = LocalBanka4MobileExtraColors.current
+}
+
 @Composable
 fun Banka4MobileTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -82,9 +99,17 @@ fun Banka4MobileTheme(
         else -> LightColorScheme
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
+    val extraColors = if (darkTheme) {
+        Banka4MobileExtraColors(bottomBarSurface = DarkBottomBarSurface)
+    } else {
+        Banka4MobileExtraColors(bottomBarSurface = LightBottomBarSurface)
+    }
+
+    CompositionLocalProvider(LocalBanka4MobileExtraColors provides extraColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = Typography,
+            content = content
+        )
+    }
 }

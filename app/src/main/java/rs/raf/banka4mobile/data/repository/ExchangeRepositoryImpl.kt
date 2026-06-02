@@ -2,6 +2,7 @@ package rs.raf.banka4mobile.data.repository
 
 import kotlinx.serialization.json.Json
 import retrofit2.HttpException
+import rs.raf.banka4mobile.data.auth.AuthSessionCoordinator
 import rs.raf.banka4mobile.data.local.session.SessionManager
 import rs.raf.banka4mobile.data.remote.api.BankingApi
 import rs.raf.banka4mobile.data.remote.api.ExchangeApi
@@ -18,7 +19,8 @@ class ExchangeRepositoryImpl @Inject constructor(
     private val exchangeApi: ExchangeApi,
     private val bankingApi: BankingApi,
     private val sessionManager: SessionManager,
-    private val json: Json
+    private val json: Json,
+    private val authSessionCoordinator: AuthSessionCoordinator
 ) : ExchangeRepository {
 
     override suspend fun getExchangeRates() = runCatching {
@@ -104,6 +106,9 @@ class ExchangeRepositoryImpl @Inject constructor(
             receivedCurrency = normalizedToCurrency
         )
     }.recoverCatching { throwable ->
+        if (throwable is HttpException && throwable.code() == 401) {
+            authSessionCoordinator.handleUnauthorized()
+        }
         throw mapToReadableException(throwable)
     }
 

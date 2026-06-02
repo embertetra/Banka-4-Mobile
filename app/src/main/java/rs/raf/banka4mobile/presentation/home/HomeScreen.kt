@@ -2,7 +2,9 @@ package rs.raf.banka4mobile.presentation.home
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,8 +14,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -22,7 +22,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Analytics
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material.icons.filled.Info
@@ -38,6 +40,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -54,14 +57,17 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.components.AccountSwitcherHeader
+import rs.raf.banka4mobile.presentation.components.BottomBarScrollSpacer
 import java.util.Locale
 import rs.raf.banka4mobile.ui.theme.SuccessGreen
 import rs.raf.banka4mobile.ui.theme.ErrorRed
 
 @Composable
 fun HomeScreen(
+    onOpenOrders: () -> Unit,
     onOpenCards: (String) -> Unit,
     onOpenLoans: () -> Unit,
+    onOpenTransactions: (String) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle().value
@@ -74,8 +80,13 @@ fun HomeScreen(
     LaunchedEffect(Unit) {
         viewModel.sideEffects.collect { sideEffect: HomeContract.SideEffect ->
             when (sideEffect) {
+                is HomeContract.SideEffect.NavigateToOrders -> onOpenOrders()
                 is HomeContract.SideEffect.NavigateToCards -> onOpenCards(sideEffect.accountNumber)
                 HomeContract.SideEffect.NavigateToLoans -> onOpenLoans()
+                is HomeContract.SideEffect.NavigateToTransactions -> {
+                    onOpenTransactions(sideEffect.accountNumber)
+                }
+
                 is HomeContract.SideEffect.ShowToast -> {
                     Toast.makeText(context, sideEffect.message, Toast.LENGTH_SHORT).show()
                 }
@@ -87,8 +98,10 @@ fun HomeScreen(
         state = state,
         onPrevious = { viewModel.onEvent(HomeContract.UiEvent.PreviousAccountClicked) },
         onNext = { viewModel.onEvent(HomeContract.UiEvent.NextAccountClicked) },
+        onOrdersClick = { viewModel.onEvent(HomeContract.UiEvent.OpenOrdersClicked) },
         onCreditInstallmentClick = { viewModel.onEvent(HomeContract.UiEvent.OpenLoansClicked) },
         onCardsClick = { viewModel.onEvent(HomeContract.UiEvent.OpenCardsClicked) },
+        onOpenAllTransactions = { viewModel.onEvent(HomeContract.UiEvent.OpenTransactionsClicked) },
         onInfoClick = { viewModel.onEvent(HomeContract.UiEvent.OpenInfoClicked) },
         onDismissInfo = { viewModel.onEvent(HomeContract.UiEvent.DismissInfoClicked) }
     )
@@ -99,8 +112,10 @@ private fun HomeScreenContent(
     state: HomeContract.UiState,
     onPrevious: () -> Unit,
     onNext: () -> Unit,
+    onOrdersClick: () -> Unit,
     onCreditInstallmentClick: () -> Unit,
     onCardsClick: () -> Unit,
+    onOpenAllTransactions: () -> Unit,
     onInfoClick: () -> Unit,
     onDismissInfo: () -> Unit
 ) {
@@ -137,8 +152,6 @@ private fun HomeScreenContent(
                         .fillMaxSize()
                         .blur(if (state.isInfoDialogVisible) 5.dp else 0.dp)
                         .statusBarsPadding()
-                        .imePadding()
-                        .navigationBarsPadding()
                 ) {
                     AccountSwitcherHeader(
                         accountName = selectedAccount.name,
@@ -151,17 +164,17 @@ private fun HomeScreenContent(
                         account = selectedAccount,
                         modifier = Modifier
                             .align(Alignment.CenterHorizontally)
-                            .padding(top = 8.dp)
                     )
 
                     ActionRow(
+                        onOrdersClick = onOrdersClick,
                         onCreditInstallmentClick = onCreditInstallmentClick,
                         onInfoClick = onInfoClick,
                         onCardsClick = onCardsClick,
-                        modifier = Modifier.padding(top = 14.dp)
+                        showOrders = state.canTrade
                     )
 
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     if (state.transactions.isEmpty()) {
                         Box(
@@ -178,13 +191,23 @@ private fun HomeScreenContent(
                             )
                         }
                     } else {
+                        val transactionsPreview = state.transactions.take(4)
+
                         LazyColumn(
                             modifier = Modifier.weight(1f),
-                            contentPadding = PaddingValues(bottom = 12.dp),
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                         ) {
-                            items(items = state.transactions, key = { it.id }) { transaction ->
+                            items(items = transactionsPreview, key = { it.id }) { transaction ->
                                 TransactionCard(transaction = transaction)
+                            }
+
+                            item {
+                                OpenAllTransactionsCard(onClick = onOpenAllTransactions)
+                            }
+
+                            item {
+                                BottomBarScrollSpacer()
                             }
                         }
                     }
@@ -210,16 +233,31 @@ private fun HomeScreenContent(
 
 @Composable
 private fun ActionRow(
+    onOrdersClick: () -> Unit,
     onCreditInstallmentClick: () -> Unit,
     onInfoClick: () -> Unit,
     onCardsClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showOrders: Boolean = false
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (showOrders)
+            ActionIconItem(
+                label = "Orderi",
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Analytics,
+                        contentDescription = "Moji orderi",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                onClick = onOrdersClick
+            )
+
         ActionIconItem(
             label = "Rata",
             icon = {
@@ -264,12 +302,23 @@ private fun ActionIconItem(
     icon: @Composable () -> Unit,
     onClick: () -> Unit
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
                 .size(width = 64.dp, height = 54.dp)
                 .clip(RoundedCornerShape(14.dp))
                 .background(MaterialTheme.colorScheme.primaryContainer)
+                .border(
+                    width = if (isDarkTheme) 0.dp else 1.dp,
+                    color = if (isDarkTheme) {
+                        Color.Transparent
+                    } else {
+                        MaterialTheme.colorScheme.outline.copy(alpha = 0.45f)
+                    },
+                    shape = RoundedCornerShape(14.dp)
+                )
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
@@ -288,13 +337,29 @@ private fun ActionIconItem(
 
 @Composable
 private fun TransactionCard(transaction: HomeContract.TransactionItem) {
+    val isDarkTheme = isSystemInDarkTheme()
     val isReceived = transaction.type == HomeContract.TransactionType.RECEIVED
     val amountColor = if (isReceived) SuccessGreen else ErrorRed
     val amountPrefix = if (isReceived) "+" else "-"
 
     Card(
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDarkTheme) {
+                MaterialTheme.colorScheme.surfaceVariant
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDarkTheme) 3.dp else 1.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            width = if (isDarkTheme) 0.dp else 1.dp,
+            color = if (isDarkTheme) {
+                Color.Transparent
+            } else {
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.20f)
+            }
+        ),
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(
@@ -329,6 +394,59 @@ private fun TransactionCard(transaction: HomeContract.TransactionItem) {
 }
 
 @Composable
+private fun OpenAllTransactionsCard(onClick: () -> Unit) {
+    val isDarkTheme = isSystemInDarkTheme()
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isDarkTheme) {
+                MaterialTheme.colorScheme.surfaceVariant
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = if (isDarkTheme) 3.dp else 1.dp),
+        border = androidx.compose.foundation.BorderStroke(
+            width = if (isDarkTheme) 0.dp else 1.dp,
+            color = if (isDarkTheme) {
+                Color.Transparent
+            } else {
+                MaterialTheme.colorScheme.outline.copy(alpha = 0.20f)
+            }
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Pogledaj sve transakcije",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        HorizontalDivider(
+            modifier = Modifier.padding(top = 8.dp),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.20f)
+        )
+    }
+}
+
+@Composable
 private fun BalanceCircle(
     account: HomeContract.AccountItem,
     modifier: Modifier = Modifier
@@ -337,7 +455,7 @@ private fun BalanceCircle(
 
     Box(
         modifier = modifier
-            .size(350.dp)
+            .size(300.dp)
             .drawBehind {
                 drawCircle(
                     brush = Brush.radialGradient(

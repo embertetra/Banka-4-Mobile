@@ -2,6 +2,7 @@ package rs.raf.banka4mobile.data.repository
 
 import kotlinx.serialization.json.Json
 import retrofit2.HttpException
+import rs.raf.banka4mobile.data.auth.AuthSessionCoordinator
 import rs.raf.banka4mobile.data.local.session.SessionManager
 import rs.raf.banka4mobile.data.remote.api.BankingApi
 import rs.raf.banka4mobile.data.remote.dto.ApiErrorDto
@@ -19,7 +20,8 @@ import javax.inject.Inject
 class HomeRepositoryImpl @Inject constructor(
     private val bankingApi: BankingApi,
     private val sessionManager: SessionManager,
-    private val json: Json
+    private val json: Json,
+    private val authSessionCoordinator: AuthSessionCoordinator
 ) : HomeRepository {
 
     override suspend fun getAccounts(): Result<List<BankAccountSummary>> {
@@ -98,6 +100,9 @@ class HomeRepositoryImpl @Inject constructor(
         return try {
             Result.success(block())
         } catch (e: HttpException) {
+            if (e.code() == 401) {
+                authSessionCoordinator.handleUnauthorized()
+            }
             Result.failure(Exception(parseApiErrorMessage(e)))
         } catch (_: IOException) {
             Result.failure(Exception("Greska u konekciji sa serverom."))

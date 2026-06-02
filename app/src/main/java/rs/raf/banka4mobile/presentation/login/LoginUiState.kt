@@ -1,9 +1,17 @@
 package rs.raf.banka4mobile.presentation.login
 
-data class LoginUiState(
-    val email: String = "",
-    val password: String = "",
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null,
-    val isLoginSuccessful: Boolean = false
-)
+interface LoginContract {
+    data class LoginUiState(
+        val email: String = "",
+        val password: String = "",
+        val isLoading: Boolean = false,
+        val showBiometricLogin: Boolean = false,
+        val biometricAvailabilityStatus: Int? = null
+    )
+
+    sealed class LoginUiEvent {
+        data object NavigateToHome : LoginUiEvent()
+        data class ShowMessage(val message: String) : LoginUiEvent()
+        data object ShowBiometricPrompt : LoginUiEvent()
+    }
+}

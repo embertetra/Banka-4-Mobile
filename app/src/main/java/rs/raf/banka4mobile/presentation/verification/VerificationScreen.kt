@@ -1,7 +1,9 @@
 package rs.raf.banka4mobile.presentation.verification
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
@@ -12,12 +14,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -25,10 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import rs.raf.banka4mobile.ui.theme.GradientEnd
-import rs.raf.banka4mobile.ui.theme.GradientEndDark
-import rs.raf.banka4mobile.ui.theme.GradientStart
-import rs.raf.banka4mobile.ui.theme.GradientStartDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,11 +37,6 @@ fun VerificationScreen(
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val timerText = "%02d:%02d".format(state.secondsLeft / 60, state.secondsLeft % 60)
-    val gradientColors = if (isSystemInDarkTheme()) {
-        listOf(GradientStartDark, GradientEndDark)
-    } else {
-        listOf(GradientStart, GradientEnd)
-    }
 
     LaunchedEffect(Unit) {
         viewModel.sideEffects.collect { sideEffect ->
@@ -58,7 +52,22 @@ fun VerificationScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         Scaffold(
-            containerColor = Color.Transparent
+            containerColor = Color.Transparent,
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = "Verifikacija",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.headlineLarge
+                        )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    )
+                )
+            }
         ) { padding ->
 
             Box(
@@ -73,6 +82,33 @@ fun VerificationScreen(
                         .padding(top = 140.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Card(
+                        modifier = Modifier
+                            .size(108.dp)
+                            .padding(bottom = 24.dp),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Verified,
+                                contentDescription = "verification method",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(58.dp)
+                            )
+                        }
+                    }
+
                     Text(
                         text = timerText,
                         color = MaterialTheme.colorScheme.primary,
@@ -109,8 +145,7 @@ fun VerificationScreen(
                             totp = state.totp,
                             modifier = Modifier
                                 .align(Alignment.Center)
-                                .offset(y = 20.dp),
-                            gradientColors = gradientColors
+                                .offset(y = 20.dp)
                         )
                     }
                 }
@@ -123,13 +158,9 @@ fun VerificationScreen(
 private fun TotpDigitsRow(
     totp: String,
     modifier: Modifier = Modifier,
-    gradientColors: List<Color>
 ) {
     val digits = totp.padStart(6, '0').take(6).toCharArray()
-
-    val digitGradient = Brush.verticalGradient(
-        colors = gradientColors
-    )
+    val digitShadowElevation = if (isSystemInDarkTheme()) 8.dp else 3.dp
 
     Row(
         modifier = modifier,
@@ -140,18 +171,22 @@ private fun TotpDigitsRow(
                 modifier = Modifier
                     .size(width = 44.dp, height = 56.dp)
                     .shadow(
-                        elevation = 8.dp,
+                        elevation = digitShadowElevation,
                         shape = RoundedCornerShape(14.dp)
                     )
                     .background(
-                        brush = digitGradient,
+                        color = MaterialTheme.colorScheme.background,
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .border(
+                        BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
                         shape = RoundedCornerShape(14.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = digit.toString(),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 32.sp,
                     fontWeight = FontWeight.Bold
                 )

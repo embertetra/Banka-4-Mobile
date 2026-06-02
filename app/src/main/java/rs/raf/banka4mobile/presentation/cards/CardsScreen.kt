@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.cards.CardContract.UiEvent
 import rs.raf.banka4mobile.presentation.components.AccountSwitcherHeader
+import rs.raf.banka4mobile.presentation.components.BottomBarScrollSpacer
 import java.util.Locale
 
 @Composable
@@ -79,7 +79,6 @@ fun CardsScreen(
                         .fillMaxSize()
                         .statusBarsPadding()
                         .imePadding()
-                        .navigationBarsPadding()
                 ) {
                     AccountSwitcherHeader(
                         accountName = selectedAccount?.name ?: "",
@@ -125,11 +124,15 @@ fun CardsScreen(
                     } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                            contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             items(items = state.cards, key = { it.id }) { card ->
                                 BankCardItem(card = card)
+                            }
+
+                            item {
+                                BottomBarScrollSpacer()
                             }
                         }
                     }

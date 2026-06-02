@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import rs.raf.banka4mobile.presentation.exchange.ExchangeContract.UiEvent
+import rs.raf.banka4mobile.presentation.components.BottomBarScrollSpacer
 import rs.raf.banka4mobile.ui.theme.SuccessGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -166,7 +167,7 @@ fun ExchangeScreen(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
+                    BottomBarScrollSpacer()
                 }
             }
         }

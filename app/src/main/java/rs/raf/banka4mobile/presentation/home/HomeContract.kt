@@ -9,7 +9,8 @@ interface HomeContract {
         val selectedAccountIndex: Int = 0,
         val transactions: List<TransactionItem> = emptyList(),
         val isInfoDialogVisible: Boolean = false,
-        val accountDetails: AccountDetailsItem? = null
+        val accountDetails: AccountDetailsItem? = null,
+        val canTrade: Boolean = false
     ) {
         val selectedAccount: AccountItem?
             get() = accounts.getOrNull(selectedAccountIndex)
@@ -54,15 +55,19 @@ interface HomeContract {
         data object ScreenOpened : UiEvent()
         data object PreviousAccountClicked : UiEvent()
         data object NextAccountClicked : UiEvent()
+        data object OpenOrdersClicked : UiEvent()
         data object OpenCardsClicked : UiEvent()
         data object OpenLoansClicked : UiEvent()
+        data object OpenTransactionsClicked : UiEvent()
         data object OpenInfoClicked : UiEvent()
         data object DismissInfoClicked : UiEvent()
     }
 
     sealed class SideEffect {
         data class NavigateToCards(val accountNumber: String) : SideEffect()
+        data object NavigateToOrders : SideEffect()
         data object NavigateToLoans : SideEffect()
+        data class NavigateToTransactions(val accountNumber: String) : SideEffect()
         data class ShowToast(val message: String) : SideEffect()
     }
 

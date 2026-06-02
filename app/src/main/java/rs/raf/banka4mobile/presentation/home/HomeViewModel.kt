@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import rs.raf.banka4mobile.domain.model.home.BankAccountDetails
 import rs.raf.banka4mobile.domain.model.home.BankAccountSummary
 import rs.raf.banka4mobile.domain.model.home.BankPayment
+import rs.raf.banka4mobile.domain.repository.AuthRepository
 import rs.raf.banka4mobile.domain.repository.HomeRepository
 import rs.raf.banka4mobile.presentation.home.HomeContract.SideEffect
 import rs.raf.banka4mobile.presentation.home.HomeContract.UiEvent
@@ -20,7 +21,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val homeRepository: HomeRepository
+    private val homeRepository: HomeRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(UiState())
@@ -35,10 +37,20 @@ class HomeViewModel @Inject constructor(
             UiEvent.ScreenOpened -> fetchData()
             UiEvent.PreviousAccountClicked -> previousAccount()
             UiEvent.NextAccountClicked -> nextAccount()
+            UiEvent.OpenOrdersClicked -> openOrders()
             UiEvent.OpenCardsClicked -> openCards()
             UiEvent.OpenLoansClicked -> openLoans()
+            UiEvent.OpenTransactionsClicked -> openTransactions()
             UiEvent.OpenInfoClicked -> setState { copy(isInfoDialogVisible = true) }
             UiEvent.DismissInfoClicked -> setState { copy(isInfoDialogVisible = false) }
+        }
+    }
+
+    private fun openOrders() {
+        if (state.value.isLoading) return
+
+        viewModelScope.launch {
+            _sideEffects.emit(SideEffect.NavigateToOrders)
         }
     }
 
@@ -57,6 +69,16 @@ class HomeViewModel @Inject constructor(
 
         viewModelScope.launch {
             _sideEffects.emit(SideEffect.NavigateToLoans)
+        }
+    }
+
+    private fun openTransactions() {
+        if (state.value.isLoading) return
+
+        val accountNumber = state.value.selectedAccount?.accountNumber ?: return
+
+        viewModelScope.launch {
+            _sideEffects.emit(SideEffect.NavigateToTransactions(accountNumber))
         }
     }
 
@@ -90,6 +112,10 @@ class HomeViewModel @Inject constructor(
                         .getAccountDetails(accountNumber = selectedAccount.accountNumber)
                         .getOrNull()
 
+                    val session = authRepository.getSession()
+                    val permissions = session?.user?.permissions ?: emptyList()
+                    val canTrade = permissions.any{ it.contains("trading", ignoreCase = true) }
+
                     setState {
                         copy(
                             isLoading = false,
@@ -97,7 +123,8 @@ class HomeViewModel @Inject constructor(
                             accounts = accounts.map { it.toUiAccount() },
                             selectedAccountIndex = 0,
                             transactions = payments.toUiTransactions(selectedAccount.accountNumber),
-                            accountDetails = details?.toUiDetails()
+                            accountDetails = details?.toUiDetails(),
+                            canTrade = canTrade
                         )
                     }
                 }
@@ -105,7 +132,8 @@ class HomeViewModel @Inject constructor(
                     setState {
                         copy(
                             isLoading = false,
-                            errorMessage = throwable.message ?: "Greska pri ucitavanju podataka."
+                            errorMessage = throwable.message ?: "Greska pri ucitavanju podataka.",
+                            canTrade = false
                         )
                     }
                 }

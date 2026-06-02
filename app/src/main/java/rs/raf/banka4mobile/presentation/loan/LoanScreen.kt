@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import rs.raf.banka4mobile.presentation.components.BottomBarScrollSpacer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,7 +122,7 @@ fun LoanScreen(
 					modifier = Modifier
 						.fillMaxSize()
 						.padding(paddingValues),
-					contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+					contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp),
 					verticalArrangement = Arrangement.spacedBy(12.dp)
 				) {
 					itemsIndexed(
@@ -137,6 +138,10 @@ fun LoanScreen(
 								color = MaterialTheme.colorScheme.primary.copy(alpha = 0.18f)
 							)
 						}
+					}
+
+					item {
+						BottomBarScrollSpacer()
 					}
 				}
 			}
