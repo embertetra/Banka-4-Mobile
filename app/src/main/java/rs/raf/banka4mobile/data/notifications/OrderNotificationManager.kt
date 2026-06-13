@@ -17,6 +17,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 enum class OrderChangeType {
+    NEW_CREATED,
     PENDING,
     APPROVED,
     DECLINED,
@@ -31,7 +32,8 @@ class OrderNotificationManager @Inject constructor(
 ) {
 
     companion object {
-        private const val CHANNEL_ID = "orders_status_updates"
+        // Bumped channel id to avoid old muted/low-importance channel settings.
+        private const val CHANNEL_ID = "orders_status_updates_v2"
         private const val CHANNEL_NAME = "Order updates"
     }
 
@@ -55,6 +57,12 @@ class OrderNotificationManager @Inject constructor(
 
     @SuppressLint("MissingPermission")
     fun showIfAllowed(order: Order, changeType: OrderChangeType): Boolean {
+        val managerCompat = NotificationManagerCompat.from(context)
+        if (!managerCompat.areNotificationsEnabled()) {
+            Timber.tag("OrderNotification").d("Cannot post notifications - app notifications disabled")
+            return false
+        }
+
         if (!canPostNotifications()) {
             Timber.tag("OrderNotification").d("Cannot post notifications - permission missing")
             return false
@@ -62,7 +70,17 @@ class OrderNotificationManager @Inject constructor(
 
         ensureChannel()
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val channelImportance = manager.getNotificationChannel(CHANNEL_ID)?.importance
+            if (channelImportance == NotificationManager.IMPORTANCE_NONE) {
+                Timber.tag("OrderNotification").d("Cannot post notifications - channel muted by user")
+                return false
+            }
+        }
+
         val title = when (changeType) {
+            OrderChangeType.NEW_CREATED -> "Novi order dodat"
             OrderChangeType.DONE -> "Order izvršen"
             OrderChangeType.PARTIAL_FILL -> "Order delimično izvršen"
             OrderChangeType.AUTOMATIC_CANCEL -> "Order automatski otkazan"
@@ -86,12 +104,16 @@ class OrderNotificationManager @Inject constructor(
             .setContentText("${order.ticker} — ${order.status}")
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
             .setAutoCancel(true)
             .build()
 
+        val notificationId = (order.id.toString() + changeType.name + System.currentTimeMillis()).hashCode()
+
         return try {
-            NotificationManagerCompat.from(context).notify(order.id.toInt(), notification)
-            Timber.tag("OrderNotification").d("Notification sent successfully")
+            managerCompat.notify(notificationId, notification)
+            Timber.tag("OrderNotification").d("Notification sent successfully (id=%s, type=%s)", notificationId, changeType)
             true
         } catch (e: SecurityException) {
             Timber.tag("OrderNotification").e("SecurityException: ${e.message}")

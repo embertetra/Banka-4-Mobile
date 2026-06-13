@@ -12,6 +12,7 @@ import rs.raf.banka4mobile.domain.model.orders.Order
 import rs.raf.banka4mobile.domain.repository.OrdersRepository
 import rs.raf.banka4mobile.presentation.orders.OrdersContract.UiState
 import rs.raf.banka4mobile.presentation.orders.OrdersContract.UiEvent
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -51,6 +52,8 @@ class OrderViewModel @Inject constructor(
                 .onSuccess { ordersPage ->
                     runCatching {
                         orderNotificationCoordinator.processOrders(ordersPage.orders)
+                    }.onFailure { error ->
+                        Timber.tag("OrderNotification").e(error, "Failed to process order notifications")
                     }
 
                     setState {

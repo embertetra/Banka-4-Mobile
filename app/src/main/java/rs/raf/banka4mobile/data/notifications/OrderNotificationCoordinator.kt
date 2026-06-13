@@ -3,6 +3,7 @@ package rs.raf.banka4mobile.data.notifications
 import rs.raf.banka4mobile.data.local.orders.OrderNotificationStore
 import rs.raf.banka4mobile.data.local.session.SessionManager
 import rs.raf.banka4mobile.domain.model.orders.Order
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,16 +18,24 @@ class OrderNotificationCoordinator @Inject constructor(
         val session = sessionManager.getSession() ?: return
         val userId = session.user.id
 
+        val hasStoredSnapshot = notificationStore.hasSnapshot(userId)
+
         val previousSnapshot = notificationStore.getSnapshot(userId)
             .associateBy { it.orderId }
 
-        if (previousSnapshot.isEmpty()) {
+        if (!hasStoredSnapshot) {
+            Timber.tag("OrderNotification").d("Seeding initial snapshot for userId=%s, orders=%s", userId, orders.size)
             notificationStore.saveSnapshot(userId, orders)
             return
         }
 
         orders.forEach { order ->
-            val previousOrder = previousSnapshot[order.id] ?: return@forEach
+            val previousOrder = previousSnapshot[order.id]
+            if (previousOrder == null) {
+                notificationManager.showIfAllowed(order, OrderChangeType.NEW_CREATED)
+                return@forEach
+            }
+
             val previousChangeType = previousOrder.toChangeType()
             val currentChangeType = order.toChangeType()
 

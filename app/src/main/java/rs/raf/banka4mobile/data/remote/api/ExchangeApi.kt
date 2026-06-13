@@ -7,10 +7,10 @@ import rs.raf.banka4mobile.data.remote.dto.exchange.ExchangeRatesResponseDto
 
 interface ExchangeApi {
 
-    @GET("api/exchange/rates")
+    @GET("exchange/rates")
     suspend fun getExchangeRates(): ExchangeRatesResponseDto
 
-    @GET("api/exchange/calculate")
+    @GET("exchange/calculate")
     suspend fun calculateExchange(
         @Query("amount") amount: Double,
         @Query("from_currency") fromCurrency: String,

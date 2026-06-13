@@ -56,6 +56,20 @@ class OrderNotificationStore @Inject constructor(
         }.getOrDefault(emptyList())
     }
 
+    suspend fun hasSnapshot(userId: Int): Boolean {
+        val preferences = context.ordersNotificationDataStore.data
+            .catch { exception ->
+                if (exception is IOException) {
+                    emit(emptyPreferences())
+                } else {
+                    throw exception
+                }
+            }
+            .first()
+
+        return preferences[Keys.snapshot(userId)] != null
+    }
+
     suspend fun saveSnapshot(userId: Int, orders: List<Order>) {
         val snapshot = orders.map { it.toStoredSnapshot() }
         context.ordersNotificationDataStore.edit { preferences ->

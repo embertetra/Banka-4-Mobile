@@ -21,10 +21,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val AUTH_BASE_URL = "http://rafsi.davidovic.io:8080/api/"
-    private const val BANKING_BASE_URL = "http://rafsi.davidovic.io:8081/api/"
-    private const val EXCHANGE_BASE_URL = "http://rafsi.davidovic.io:8081/"
-    private const val ORDERS_BASE_URL = "http://rafsi.davidovic.io:8082/api/"
+    private const val AUTH_BASE_URL = "https://banka-4.radenkovic.rs/user-service/api/"
+    private const val BANKING_BASE_URL = "https://banka-4.radenkovic.rs/banking-service/api/"
+    private const val ORDERS_BASE_URL = "https://banka-4.radenkovic.rs/trading-service/api/"
 
     @Provides
     @Singleton
@@ -93,7 +92,7 @@ object NetworkModule {
         json: Json
     ): Retrofit {
         return Retrofit.Builder()
-            .baseUrl(EXCHANGE_BASE_URL)
+            .baseUrl(BANKING_BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(
                 json.asConverterFactory("application/json".toMediaType())
